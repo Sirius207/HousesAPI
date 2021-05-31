@@ -19,6 +19,7 @@ loguru = "==0.4.1"
 requests = "==2.23.0"
 selenium = "*"
 beautifulsoup4 = "*"
+pytesseract = "*"
 
 [requires]
 python_version = "3.9"
