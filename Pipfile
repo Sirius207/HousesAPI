@@ -20,6 +20,7 @@ requests = "==2.23.0"
 selenium = "*"
 beautifulsoup4 = "*"
 pytesseract = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.9"
