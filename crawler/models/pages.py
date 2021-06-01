@@ -74,7 +74,7 @@ class HousePageOperator:
         writer.writerows(urls)
         logger.info("Write Success")
 
-    def save_all_house_url(self, limit=None):
+    def save_all_house_url(self, limit=3):
         url = "https://rent.591.com.tw/?kind=0&region=1"
         self.driver.get(url)
         self.choose_city()
@@ -84,7 +84,7 @@ class HousePageOperator:
 
             is_next_page = True
             new_page = 1
-            while is_next_page and int(new_page) <= 3:
+            while is_next_page and int(new_page) <= limit:
                 time.sleep(2)
                 new_page = self.get_current_page()
 
