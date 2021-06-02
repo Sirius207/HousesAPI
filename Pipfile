@@ -23,6 +23,7 @@ pytesseract = "*"
 pandas = "*"
 requests-html = "*"
 pillow = "*"
+joblib = "*"
 
 [requires]
 python_version = "3.9"
