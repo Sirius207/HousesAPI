@@ -21,6 +21,8 @@ selenium = "*"
 beautifulsoup4 = "*"
 pytesseract = "*"
 pandas = "*"
+requests-html = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.9"
