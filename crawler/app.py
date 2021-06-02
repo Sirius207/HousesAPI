@@ -1,55 +1,47 @@
-import time
-from selenium import webdriver
-from bs4 import BeautifulSoup
-from selenium.webdriver.chrome.options import Options
+from typing import List
 
-try:
-    url = 'https://rent.591.com.tw/?kind=0&region=15'
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--window-size=1366,768")
-    chrome_options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36')
+import pandas as pd
+from joblib import Parallel, delayed
+from loguru import logger
 
-    driver = webdriver.Chrome(options=chrome_options)
-
-    driver.get(url)
-    time.sleep(3)
-    content = driver.page_source
-    soup = BeautifulSoup(content, 'html.parser')
-    elements = soup.select('.listLeft .infoContent h3 a')
-    #    print(elements)
-    for e in elements:
-        print(e.get("href"))
-    print('ok')
-    driver.find_element_by_class_name('area-box-close').click()
-
-    driver.find_element_by_class_name('pageNum-form').click()
-    content = driver.page_source
-    soup = BeautifulSoup(content, 'html.parser')
-    elements = soup.select('.listLeft .infoContent h3 a')
-    url = 'https:' + elements[0].get("href")[1:]
-    driver.get(url)
-    content = driver.page_source
-    soup = BeautifulSoup(content, 'html.parser')
-    elements = soup.select('.avatarRight i')
-    print(elements[0].text)
-
-    elements = soup.select('.attr li')
-    for e in elements:
-        print(e.text)
-
-    elements = soup.select('.houseIntro')
-    print(elements[0].text)
-
-    elements = soup.select('.labelList li')
-    for e in elements:
-        print(e.text)
-
-    elements = soup.select('.num img')
-    print(elements[0].get("src"))
+from crawler.models.houses import parse_single_house
 
 
-finally:
-    time.sleep(3)
-    print('ok')
-    driver.quit()
+def _load_basic_houses_info(start: int = 0, end: int = 2) -> List[List[str]]:
+    """load url and title of houses data
+
+    Returns:
+        List: e.g. [["https://..", "title_a"], ...]
+    """
+    # load url sources
+    local_url_file = "data/urls_new.csv"
+    basic_house_df = pd.read_csv(local_url_file)
+    return basic_house_df.iloc[start:end].values.tolist()
+
+
+def _parallel_parse_house_data(basic_houses_info) -> List[dict]:
+    houses = Parallel(n_jobs=-1)(
+        delayed(parse_single_house)(house_info[0], house_info[1])
+        for house_info in basic_houses_info
+    )
+    # filter deleted houses
+    return [house for house in houses if house]
+
+
+def _export_house_data_to_csv(houses: dict):
+    full_house_df = pd.DataFrame.from_dict(houses)
+    full_house_df.to_csv("./data/temp_info.csv", index=None)
+
+
+def main():
+    basic_houses_info = _load_basic_houses_info()
+    houses = _parallel_parse_house_data(basic_houses_info)
+
+    logger.info(f"Parse {len(houses)} Houses")
+    logger.info(f"Sample: {houses[0]}")
+
+    _export_house_data_to_csv(houses)
+
+
+if __name__ == "__main__":
+    main()

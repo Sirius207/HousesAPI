@@ -1,19 +1,18 @@
 import re
 from typing import Optional, Tuple
 
-from joblib import Parallel, delayed
 from requests_html import HTMLSession
 from PIL import Image
 import pytesseract
-import pandas as pd
 from loguru import logger
+from selenium.common.exceptions import NoSuchElementException
 
 from crawler.utils.driver import get_driver
 
 
 class PhoneOperator:
     @classmethod
-    def get_phone_from_url(cls, url: str, html) -> str:
+    def get_phone_from_url(cls, url: str, html) -> Optional[str]:
         phone = cls._get_phone_from_text(html)
         if not phone:
             phone = cls._get_phone_from_image(url)
@@ -21,22 +20,29 @@ class PhoneOperator:
         return phone
 
     @classmethod
-    def _get_phone_from_image(cls, url: str) -> str:
+    def _get_phone_from_image(cls, url: str) -> Optional[str]:
         # pick house_id from url string
         house_id = url[-13:-5]
         screen_file = f"./data/phone/full_{house_id}.png"
         phone_img = cls._save_screenshot(screen_file, url)
 
-        return cls._recognize_phone_image(screen_file, phone_img)
+        if phone_img:
+            return cls._recognize_phone_image(screen_file, phone_img)
+
+        return None
 
     @staticmethod
-    def _save_screenshot(screen_file: str, url: str):
-        driver = get_driver()
-        driver.set_window_size(1366, 768)
-        driver.get(url)
-        driver.save_screenshot(screen_file)
+    def _save_screenshot(screen_file: str, url: str) -> Optional[str]:
+        try:
+            driver = get_driver()
+            driver.set_window_size(1366, 768)
+            driver.get(url)
+            driver.save_screenshot(screen_file)
 
-        return driver.find_element_by_css_selector(".num img")
+            return driver.find_element_by_css_selector(".num img")
+        except NoSuchElementException as e:
+            logger.warning(f"{url} phone image not found\n{e}")
+            return None
 
     @staticmethod
     def _recognize_phone_image(screen_file: str, phone_img):
@@ -59,23 +65,43 @@ class PhoneOperator:
         return pytesseract.image_to_string(image)
 
     @staticmethod
-    def _get_phone_from_text(html) -> str:
-        return html.find(".num", first=True).text
+    def _get_phone_from_text(html) -> Optional[str]:
+        phone = html.find(".num", first=True)
+        if phone:
+            return phone.text
+
+        return None
 
 
 class House:
     def __init__(self, url: str, title: str, html):
         self.url = url
         self.title = title
-        self.phone = PhoneOperator.get_phone_from_url(url, html)
-
-        self.lessor = html.find(".avatarRight i", first=True).text
-        self.lessor_identity = html.find(".avatarRight", first=True).text.replace(
-            self.lessor, ""
+        self.sold = html.find(".DealEnd").text if html.find(".DealEnd") else None
+        self.phone = (
+            PhoneOperator.get_phone_from_url(url, html) if not self.sold else None
         )
+
+        self.lessor, self.lessor_identity = self._get_lessor_info(html)
+
         self.house_type, self.house_status = self._get_house_info(html)
         self.gender_requirement = self._get_gender_requirement(html)
-        self.house_condition = html.find(".houseIntro", first=True).text
+
+        self.house_condition = self._get_house_condition(html)
+
+    @staticmethod
+    def _get_lessor_info(html) -> Tuple:
+        lessor = html.find(".avatarRight i", first=True)
+        if lessor:
+            lessor = lessor.text
+            lessor_identity = html.find(".avatarRight", first=True).text.replace(
+                lessor, ""
+            )
+        else:
+            lessor = None
+            lessor_identity = None
+
+        return lessor, lessor_identity
 
     @staticmethod
     def _get_house_info(html) -> Tuple:
@@ -83,12 +109,15 @@ class House:
 
         house_type = house_status = None
         for element in elements:
+            pattern_after_colon = r":\s*(.*)"
             if "型" in element.text:
-                house_type = re.findall(r":\s*(.*)", element.text.replace("\n", ""))[0]
+                house_type = re.findall(
+                    pattern_after_colon, element.text.replace("\n", "")
+                )[0]
             elif "現" in element.text:
-                house_status = re.findall(r":\s*(.*)", element.text.replace("\n", ""))[
-                    0
-                ]
+                house_status = re.findall(
+                    pattern_after_colon, element.text.replace("\n", "")
+                )[0]
 
         return house_type, house_status
 
@@ -103,6 +132,11 @@ class House:
         except ValueError:
             return None
 
+    @staticmethod
+    def _get_house_condition(html) -> Optional[str]:
+        house_condition = html.find(".houseIntro", first=True)
+        return house_condition.text if house_condition else None
+
     def to_dict(self) -> dict:
         return {
             "url": self.url,
@@ -111,32 +145,24 @@ class House:
             "lessor_identity": self.lessor_identity,
             "house_type": self.house_type,
             "house_status": self.house_status,
+            "sold": self.sold,
             "phone": self.phone,
             "gender_requirement": self.gender_requirement,
             "house_condition": self.house_condition,
         }
 
 
-def parse_single_house(url, title):
-    r = HTMLSession().get(url)
-    return House(url, title, r.html).to_dict()
+def parse_single_house(url, title, proxy=None) -> Optional[dict]:
+    session_arg = {"browser_args": [f"--proxy-server={proxy}"]} if proxy else {}
 
+    r = HTMLSession(**session_arg).get(url)
 
-def main():
-    local_url_file = "data/urls_new.csv"
-    basic_house_df = pd.read_csv(local_url_file)
-    houses = basic_house_df.iloc[0:20].values.tolist()
+    if r.html.find(".error_img") or r.html.find("#error-page"):
+        logger.warning(f"{url} house was removed")
+        return None
 
-    results = Parallel(n_jobs=-1)(
-        delayed(parse_single_house)(houses[0], houses[1]) for houses in houses
-    )
-
-    logger.info(f"Parse {len(results)} Houses")
-    logger.info(f"Sample: {results[0]}")
-
-    full_house_df = pd.DataFrame.from_dict(results)
-    full_house_df.to_csv("./data/info.csv", index=None)
-
-
-if __name__ == "__main__":
-    main()
+    try:
+        return House(url, title, r.html).to_dict()
+    except AttributeError as e:
+        logger.warning(f"{url}\n{e}")
+        return None
