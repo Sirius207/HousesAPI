@@ -1,4 +1,4 @@
-PKG = crawler
+PKG = services
 
 .PHONY: init flake8 pylint lint test clean
 
