@@ -2,7 +2,7 @@ import re
 from typing import Optional, Tuple
 
 from requests_html import HTMLSession
-from PIL import Image
+from PIL import Image, ImageEnhance
 import pytesseract
 from loguru import logger
 from selenium.common.exceptions import NoSuchElementException
@@ -15,12 +15,29 @@ class PhoneOperator:
     def get_phone_from_url(cls, url: str, html) -> Optional[str]:
         phone = cls._get_phone_from_text(html)
         if not phone:
-            phone = cls._get_phone_from_image(url)
+            phone = cls._get_phone_from_image(html)
+        if not phone:
+            phone = cls._get_phone_from_screenshot(url)
 
         return phone
 
     @classmethod
-    def _get_phone_from_image(cls, url: str) -> Optional[str]:
+    def _get_phone_from_image(cls, html) -> Optional[str]:
+        image_element = html.find(".num img", first=True)
+        if not image_element:
+            return None
+        image_url = f'https:{image_element.attrs["src"]}'
+        session = HTMLSession()
+        image = Image.open(session.get(image_url, stream=True).raw)
+
+        image = image.convert("L")
+        image = ImageEnhance.Brightness(image).enhance(0.5)
+        image = image.resize((360, 60))
+
+        return pytesseract.image_to_string(image).replace("\n\x0c", "")
+
+    @classmethod
+    def _get_phone_from_screenshot(cls, url: str) -> Optional[str]:
         # pick house_id from url string
         house_id = url[-13:-5]
         screen_file = f"./data/phone/full_{house_id}.png"
@@ -62,7 +79,7 @@ class PhoneOperator:
         # resize
         image = imgOpen
         image = image.resize((360, 60))
-        return pytesseract.image_to_string(image)
+        return pytesseract.image_to_string(image).replace("\n\x0c", "")
 
     @staticmethod
     def _get_phone_from_text(html) -> Optional[str]:
@@ -77,7 +94,9 @@ class House:
     def __init__(self, url: str, title: str, html):
         self.url = url
         self.title = title
-        self.sold = html.find(".DealEnd").text if html.find(".DealEnd") else None
+        self.sold = (
+            html.find(".DealEnd", first=True).text if html.find(".DealEnd") else None
+        )
         self.phone = (
             PhoneOperator.get_phone_from_url(url, html) if not self.sold else None
         )
