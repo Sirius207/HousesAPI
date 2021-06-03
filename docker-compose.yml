@@ -2,3 +2,24 @@
 version: '3'
 
 services:
+    mongodb:
+        image: mongo:4.4.6
+        container_name: mongodb
+        restart: unless-stopped
+        command: mongod --auth
+        ports:
+        - "27017:27017"
+        env_file:
+        - ./.env
+        environment:
+        - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+        - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+        - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+        - MONGODB_DATA_DIR=${MONGODB_DATA_DIR}
+        - MONDODB_LOG_DIR=${MONDODB_LOG_DIR}
+        volumes:
+        - mongodbdata:/data/db
+
+volumes:
+  mongodbdata:
+    driver: local
