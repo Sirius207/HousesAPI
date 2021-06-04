@@ -13,16 +13,24 @@ from crawler.utils.driver import get_driver
 class PhoneOperator:
     @classmethod
     def get_phone_from_url(cls, url: str, html) -> Optional[str]:
+
+        # Method 1. Read Phone Text
         phone = cls._get_phone_from_text(html)
         if phone:
             return phone
         else:
+            # Method 2. recognize image directly
             phone = cls._get_phone_from_image(html)
 
+        # Method 3. recognize image from screenshot
         if not phone or not cls._validate_phone_str(phone):
             logger.warning(f"{url}: image detect: {phone} -> parse screenshot ")
             phone = cls._get_phone_from_screenshot(url)
-            logger.warning(f"{url}: parse screenshot -> {phone}")
+
+        if not phone or not cls._validate_phone_str(phone):
+            logger.error(f"{url}: parse screenshot -> {phone}")
+        else:
+            logger.success(f"{url}: parse screenshot -> {phone}")
 
         return phone
 
