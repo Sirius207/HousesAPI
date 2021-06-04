@@ -14,10 +14,15 @@ class PhoneOperator:
     @classmethod
     def get_phone_from_url(cls, url: str, html) -> Optional[str]:
         phone = cls._get_phone_from_text(html)
-        if not phone:
+        if phone:
+            return phone
+        else:
             phone = cls._get_phone_from_image(html)
-        if not phone:
+
+        if not phone or not cls._validate_phone_str(phone):
+            logger.warning(f"{url}: image detect: {phone} -> parse screenshot ")
             phone = cls._get_phone_from_screenshot(url)
+            logger.warning(f"{url}: parse screenshot -> {phone}")
 
         return phone
 
@@ -32,9 +37,28 @@ class PhoneOperator:
 
         image = image.convert("L")
         image = ImageEnhance.Brightness(image).enhance(0.5)
+
+        return cls._image_to_phone(image)
+
+    @staticmethod
+    def _image_to_phone(image) -> str:
+        # resize
         image = image.resize((360, 60))
 
-        return pytesseract.image_to_string(image).replace("\n\x0c", "")
+        return (
+            pytesseract.image_to_string(image)
+            .replace("\n\x0c", "")
+            .replace(" ", "")
+            .replace("-", "")
+        )
+
+    @staticmethod
+    def _validate_phone_str(phone: str) -> bool:
+        try:
+            return bool(int(phone))
+        except ValueError as e:
+            logger.warning(e)
+            return False
 
     @classmethod
     def _get_phone_from_screenshot(cls, url: str) -> Optional[str]:
@@ -61,8 +85,8 @@ class PhoneOperator:
             logger.warning(f"{url} phone image not found\n{e}")
             return None
 
-    @staticmethod
-    def _recognize_phone_image(screen_file: str, phone_img):
+    @classmethod
+    def _recognize_phone_image(cls, screen_file: str, phone_img):
 
         # calc phone position
         location = phone_img.location
@@ -73,13 +97,10 @@ class PhoneOperator:
         width = x + size["width"]
 
         # crop photo
-        imgOpen = Image.open(screen_file)
-        imgOpen = imgOpen.crop((x, y, int(width), int(height)))
+        image = Image.open(screen_file)
+        image = image.crop((x, y, int(width), int(height)))
 
-        # resize
-        image = imgOpen
-        image = image.resize((360, 60))
-        return pytesseract.image_to_string(image).replace("\n\x0c", "")
+        return cls._image_to_phone(image)
 
     @staticmethod
     def _get_phone_from_text(html) -> Optional[str]:
@@ -100,10 +121,14 @@ class House:
         self.phone = (
             PhoneOperator.get_phone_from_url(url, html) if not self.sold else None
         )
+        nav = html.find("#propNav a")
+        self.city = nav[2].text
+        self.district = nav[3].text
+        self.house_status = nav[4].text
 
         self.lessor, self.lessor_identity = self._get_lessor_info(html)
 
-        self.house_type, self.house_status = self._get_house_info(html)
+        self.house_type = self._get_house_type(html)
         self.gender_requirement = self._get_gender_requirement(html)
 
         self.house_condition = self._get_house_condition(html)
@@ -113,9 +138,10 @@ class House:
         lessor = html.find(".avatarRight i", first=True)
         if lessor:
             lessor = lessor.text
-            lessor_identity = html.find(".avatarRight", first=True).text.replace(
+            # e.g. pick "代理人" from "蘇先生（代理人）"
+            lessor_identity = html.find(".avatarRight div", first=True).text.replace(
                 lessor, ""
-            )
+            )[1:-1]
         else:
             lessor = None
             lessor_identity = None
@@ -123,22 +149,18 @@ class House:
         return lessor, lessor_identity
 
     @staticmethod
-    def _get_house_info(html) -> Tuple:
+    def _get_house_type(html) -> Optional[str]:
         elements = html.find(".attr li")
 
-        house_type = house_status = None
+        house_type = None
         for element in elements:
             pattern_after_colon = r":\s*(.*)"
             if "型" in element.text:
                 house_type = re.findall(
                     pattern_after_colon, element.text.replace("\n", "")
                 )[0]
-            elif "現" in element.text:
-                house_status = re.findall(
-                    pattern_after_colon, element.text.replace("\n", "")
-                )[0]
 
-        return house_type, house_status
+        return house_type
 
     @staticmethod
     def _get_gender_requirement(html) -> Optional[str]:
@@ -160,6 +182,8 @@ class House:
         return {
             "url": self.url,
             "title": self.title,
+            "city": self.city,
+            "district": self.district,
             "lessor": self.lessor,
             "lessor_identity": self.lessor_identity,
             "house_type": self.house_type,
