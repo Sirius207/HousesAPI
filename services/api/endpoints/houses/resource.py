@@ -20,6 +20,9 @@ class HousesOperator(Resource):
             (
                 ("renter_gender", False),
                 ("city", False),
+                ("district", False),
+                ("house_type", False),
+                ("house_status", False),
                 ("phone", False),
                 ("lessor_identity", False),
                 ("lessor_gender", False),
@@ -55,7 +58,6 @@ class HousesOperator(Resource):
                 ("phone", True),
                 ("gender_requirement", False),
                 ("house_condition", True),
-                ("house_condition", True),
             ),
         )
 
@@ -64,8 +66,17 @@ class HousesOperator(Resource):
         query_conditions = {}
         if args["city"]:
             query_conditions["city"] = args["city"]
+        if args["district"]:
+            query_conditions["district"] = args["district"]
         if args["phone"]:
             query_conditions["phone"] = args["phone"]
+        if args["house_type"]:
+            query_conditions["house_type"] = args["house_type"]
+        if args["house_status"]:
+            if args["house_status"] == "非車位":
+                query_conditions["house_status__nin"] = ("車位",)
+            else:
+                query_conditions["house_status"] = args["house_status"]
 
         if args["renter_gender"]:
             if args["renter_gender"] == "男":
@@ -114,5 +125,4 @@ class HousesOperator(Resource):
         log_context("Request - Body", args)
 
         House(**args).save()
-
         return ({"data": None}, 200)
