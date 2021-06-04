@@ -10,13 +10,13 @@ import logging
 from flask import request as req
 
 
-def add_common_arguments(parser, arguments):
+def add_common_arguments(parser, location, arguments):
     for arg, required in arguments:
         parser.add_argument(
             arg,
             type=str,
             required=required,
-            location='values',
+            location=location,
             help=f'need to add {arg} to storage',
             dest=arg,
         )
