@@ -1,29 +1,15 @@
-from typing import List
 import json
 import os
+from typing import List
 
-import pandas as pd
-from loguru import logger
-from elasticsearch import Elasticsearch, helpers
 from dotenv import load_dotenv
+from elasticsearch import Elasticsearch, helpers
+from loguru import logger
+
+from api.loader.load_csv import get_houses
+
 
 load_dotenv()
-
-
-def get_houses(filepath: str = "data/temp_info.csv") -> List[dict]:
-    df = pd.read_csv(filepath)
-
-    df["house_id"] = df["url"].map(
-        lambda url: url.replace("https://rent.591.com.tw/rent-detail-", "")[:-5]
-    )
-    df = df.drop(["url"], axis=1)
-
-    unique_df = df.drop_duplicates()
-    logger.info(f"Origin: {len(df)}, Drop Duplicates: {len(unique_df)}")
-
-    unique_df = unique_df.fillna("")
-
-    return unique_df.to_dict("records")
 
 
 class ESConfig:
@@ -34,22 +20,22 @@ class ESConfig:
 
 class ESOperator:
     def __init__(self, Config):
-        self.es = Elasticsearch(hosts=[Config.host], port=Config.port)
+        self.es_conn = Elasticsearch(hosts=[Config.host], port=Config.port)
         self.index = Config.index
 
     def create_index(self, index: str):
 
-        is_index_exist = self.es.indices.exists(index=index)
+        is_index_exist = self.es_conn.indices.exists(index=index)
         if not is_index_exist:
             body = dict()
             body["settings"] = self._get_setting()
             body["mappings"] = self._get_mappings()
             logger.info(json.dumps(body))
-            self.es.indices.create(index=index, body=body)
+            self.es_conn.indices.create(index=index, body=body)
 
-            is_index_exist = self.es.indices.exists(index=index)
+            is_index_exist = self.es_conn.indices.exists(index=index)
 
-        logger.success(self.es.indices.get(index=index))
+        logger.success(self.es_conn.indices.get(index=index))
         logger.success(f"Index {index}: {is_index_exist}")
         self.index = index
 
@@ -82,7 +68,7 @@ class ESOperator:
 
     def load_data(self, data: List[dict]):
         for record in data:
-            self.es.index(index=self.index, body=record, id=record["house_id"])
+            self.es_conn.index(index=self.index, body=record, id=record["house_id"])
 
     def bulk_save(self, data: List[dict]):
         insert_data = [
@@ -94,18 +80,14 @@ class ESOperator:
             }
             for record in data
         ]
-        helpers.bulk(self.es, insert_data)
+        helpers.bulk(self.es_conn, insert_data)
 
     def bulk_delete(self, data: List[dict]):
         remove_data = [
-            {
-                "_op_type": "index",
-                "_index": self.index,
-                "_id": record["house_id"],
-            }
+            {"_op_type": "index", "_index": self.index, "_id": record["house_id"]}
             for record in data
         ]
-        helpers.bulk(self.es, remove_data)
+        helpers.bulk(self.es_conn, remove_data)
 
 
 if __name__ == "__main__":

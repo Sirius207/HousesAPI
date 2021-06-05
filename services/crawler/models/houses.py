@@ -1,10 +1,10 @@
 import re
 from typing import Optional, Tuple
 
-from requests_html import HTMLSession
-from PIL import Image, ImageEnhance
 import pytesseract
 from loguru import logger
+from PIL import Image, ImageEnhance
+from requests_html import HTMLSession
 from selenium.common.exceptions import NoSuchElementException
 
 from crawler.utils.driver import get_driver
@@ -18,9 +18,9 @@ class PhoneOperator:
         phone = cls._get_phone_from_text(html)
         if phone:
             return phone
-        else:
-            # Method 2. recognize image directly
-            phone = cls._get_phone_from_image(html)
+
+        # Method 2. recognize image directly
+        phone = cls._get_phone_from_image(html)
 
         # Method 3. recognize image from screenshot
         if not phone or not cls._validate_phone_str(phone):
@@ -64,8 +64,8 @@ class PhoneOperator:
     def _validate_phone_str(phone: str) -> bool:
         try:
             return bool(int(phone))
-        except ValueError as e:
-            logger.warning(e)
+        except ValueError as error:
+            logger.warning(error)
             return False
 
     @classmethod
@@ -89,8 +89,8 @@ class PhoneOperator:
             driver.save_screenshot(screen_file)
 
             return driver.find_element_by_css_selector(".num img")
-        except NoSuchElementException as e:
-            logger.warning(f"{url} phone image not found\n{e}")
+        except NoSuchElementException as error:
+            logger.warning(f"{url} phone image not found\n{error}")
             return None
 
     @classmethod
@@ -99,14 +99,14 @@ class PhoneOperator:
         # calc phone position
         location = phone_img.location
         size = phone_img.size
-        x = location["x"]
-        y = location["y"]
-        height = y + size["height"]
-        width = x + size["width"]
+        phone_img_x = location["x"]
+        phone_img_y = location["y"]
+        height = phone_img_y + size["height"]
+        width = phone_img_x + size["width"]
 
         # crop photo
         image = Image.open(screen_file)
-        image = image.crop((x, y, int(width), int(height)))
+        image = image.crop((phone_img_x, phone_img_y, int(width), int(height)))
 
         return cls._image_to_phone(image)
 
@@ -117,6 +117,9 @@ class PhoneOperator:
             return phone.text
 
         return None
+
+
+# pylint: disable= R0902
 
 
 class House:
@@ -134,7 +137,9 @@ class House:
         self.district = nav[3].text
         self.house_status = nav[4].text
 
-        self.lessor, self.lessor_identity = self._get_lessor_info(html)
+        self.lessor, self.lessor_gender, self.lessor_identity = self._get_lessor_info(
+            html
+        )
 
         self.house_type = self._get_house_type(html)
         self.gender_requirement = self._get_gender_requirement(html)
@@ -143,18 +148,24 @@ class House:
 
     @staticmethod
     def _get_lessor_info(html) -> Tuple:
+        lessor_gender: Optional[str]
+        lessor_identity: Optional[str]
+
         lessor = html.find(".avatarRight i", first=True)
         if lessor:
             lessor = lessor.text
+            if "先生" in lessor:
+                lessor_gender = "男"
+            elif "小姐" in lessor:
+                lessor_gender = "女"
             # e.g. pick "代理人" from "蘇先生（代理人）"
             lessor_identity = html.find(".avatarRight div", first=True).text.replace(
                 lessor, ""
             )[1:-1]
         else:
-            lessor = None
-            lessor_identity = None
+            lessor = lessor_gender = lessor_identity = None
 
-        return lessor, lessor_identity
+        return lessor, lessor_gender, lessor_identity
 
     @staticmethod
     def _get_house_type(html) -> Optional[str]:
@@ -193,6 +204,7 @@ class House:
             "city": self.city,
             "district": self.district,
             "lessor": self.lessor,
+            "lessor_gender": self.lessor_gender,
             "lessor_identity": self.lessor_identity,
             "house_type": self.house_type,
             "house_status": self.house_status,
@@ -203,17 +215,20 @@ class House:
         }
 
 
+# pylint: enable= R0902
+
+
 def parse_single_house(url, title, proxy=None) -> Optional[dict]:
     session_arg = {"browser_args": [f"--proxy-server={proxy}"]} if proxy else {}
 
-    r = HTMLSession(**session_arg).get(url)
+    res = HTMLSession(**session_arg).get(url)
 
-    if r.html.find(".error_img") or r.html.find("#error-page"):
+    if res.html.find(".error_img") or res.html.find("#error-page"):
         logger.warning(f"{url} house was removed")
         return None
 
     try:
-        return House(url, title, r.html).to_dict()
-    except AttributeError as e:
-        logger.warning(f"{url}\n{e}")
+        return House(url, title, res.html).to_dict()
+    except AttributeError as error:
+        logger.warning(f"{url}\n{error}")
         return None

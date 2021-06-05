@@ -1,16 +1,15 @@
-from typing import Any, Generator, Tuple, Set
 import csv
 import time
+from typing import Any, Generator, Set, Tuple
 
 from bs4 import BeautifulSoup
 from loguru import logger
 from selenium import webdriver
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import StaleElementReferenceException
-
+from selenium.webdriver.support.ui import WebDriverWait
 
 WAITING_TIME = 15
 
@@ -27,7 +26,8 @@ class HousePageOperator:
             chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=1366,768")
         chrome_options.add_argument(
-            "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"
+            "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"
         )
 
         return webdriver.Chrome(options=chrome_options)
@@ -52,9 +52,8 @@ class HousePageOperator:
             next_btn = WebDriverWait(self.driver, WAITING_TIME).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "pageNext"))
             )
-            if (
-                next_btn.is_displayed() and
-                "last" not in next_btn.get_attribute("class")
+            if next_btn.is_displayed() and "last" not in next_btn.get_attribute(
+                "class"
             ):
                 next_btn.click()
                 return True
