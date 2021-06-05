@@ -1,11 +1,11 @@
-from typing import List
 import json
 import os
+from typing import List
 
 import pandas as pd
-from loguru import logger
-from elasticsearch import Elasticsearch, helpers
 from dotenv import load_dotenv
+from elasticsearch import Elasticsearch, helpers
+from loguru import logger
 
 load_dotenv()
 
@@ -98,11 +98,7 @@ class ESOperator:
 
     def bulk_delete(self, data: List[dict]):
         remove_data = [
-            {
-                "_op_type": "index",
-                "_index": self.index,
-                "_id": record["house_id"],
-            }
+            {"_op_type": "index", "_index": self.index, "_id": record["house_id"]}
             for record in data
         ]
         helpers.bulk(self.es, remove_data)

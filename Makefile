@@ -20,6 +20,14 @@ pylint:
 mypy:
 	pipenv run mypy $(PKG) --config-file setup.cfg
 
+black:
+	pipenv run black $(PKG) --skip-string-normalization
+
+isort:
+	pipenv run isort --recursive --apply
+
+format: isort black
+
 build: clean build-cython clean-modules
 
 build-cython:
@@ -33,3 +41,7 @@ clean-modules:
 
 test:
 	pipenv run pytest -vv
+
+coverage:
+	pipenv run pytest --cov-report term-missing --cov-report xml --cov=$(PKG) water_detection/tests
+

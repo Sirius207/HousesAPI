@@ -5,10 +5,8 @@ Author: Po-Chun, Lu
 """
 import os
 
-from dotenv import load_dotenv
-
 from app import create_app
-
+from dotenv import load_dotenv
 
 load_dotenv()
 # pylint: disable=C0103

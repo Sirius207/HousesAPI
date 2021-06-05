@@ -5,14 +5,15 @@ verify_ssl = true
 
 [dev-packages]
 flake8 = "==3.7.9"
-pylint = "==2.4.4"
+pylint = "==2.6.0"
 autopep8 = "==1.5.1"
 mypy = "==0.812"
-pre-commit = "==2.3.0"
+pre-commit = "==2.9.2"
 black = "==19.3b0"
 pytest-cov = "==2.10.1"
 pytest = "==6.1.2"
 commitizen = "*"
+isort = "==5.6.4"
 
 [packages]
 loguru = "==0.4.1"

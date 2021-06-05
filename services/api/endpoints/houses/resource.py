@@ -104,17 +104,16 @@ class HousesOperator(Resource):
         query_conditions = self._query_conditions(args)
         houses = House.objects(**query_conditions)
         if not houses:
-            return {
-                "message": "not found",
-                "len": 0,
-                "data": [],
-            }, 404
+            return {"message": "not found", "len": 0, "data": []}, 404
 
-        return {
-            "message": "success",
-            "len": houses.count(),
-            "data": [self._get_fields(house) for house in houses],
-        }, 200
+        return (
+            {
+                "message": "success",
+                "len": houses.count(),
+                "data": [self._get_fields(house) for house in houses],
+            },
+            200,
+        )
 
     def post(self):
         args = self.post_parser.parse_args()

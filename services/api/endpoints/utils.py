@@ -4,8 +4,8 @@ Author: Po-Chun, Lu
 
 """
 
-import time
 import logging
+import time
 
 from flask import request as req
 
@@ -17,13 +17,13 @@ def add_common_arguments(parser, location, arguments):
             type=str,
             required=required,
             location=location,
-            help=f'need to add {arg} to storage',
+            help=f"need to add {arg} to storage",
             dest=arg,
         )
 
 
 def get_logger_adapter(resource="Request"):
-    """ get log require args """
+    """get log require args"""
     return logging.LoggerAdapter(
         logging.getLogger("app"),
         {
@@ -37,13 +37,13 @@ def get_logger_adapter(resource="Request"):
 
 
 def log_context(resource="Request", context=None):
-    """ function for logging text """
+    """function for logging text"""
     logger = get_logger_adapter(resource)
     logger.info(log_contents(req, context))
 
 
 def log_headers(request):
-    """ get log of wsgi header args """
+    """get log of wsgi header args"""
     common_headers = [
         "Host",
         "User-Agent",
@@ -71,7 +71,7 @@ def log_headers(request):
 
 
 def log_contents(request, option=None):
-    """ format log text """
+    """format log text"""
     log = log_headers(request)
     if option:
         log = {**log, **option}

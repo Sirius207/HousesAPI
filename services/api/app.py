@@ -3,19 +3,19 @@ Entry Module
 Author: Po-Chun, Lu
 
 """
+import logging
 import os
 import sys
-import logging
 
+from dotenv import load_dotenv
 from flask import Flask
 from flask_restful import Api
 from werkzeug.exceptions import HTTPException, default_exceptions
-from dotenv import load_dotenv
 
-from endpoints.utils import log_context
+from config import APP_CONFIG
 from db import db
 from endpoints import RESOURCES
-from config import APP_CONFIG
+from endpoints.utils import log_context
 
 load_dotenv()
 

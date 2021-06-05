@@ -1,9 +1,9 @@
-from mongoengine import connect
 import pandas as pd
 from loguru import logger
+from mongoengine import connect
 
-from endpoints.houses.model import House
 from config import Config
+from endpoints.houses.model import House
 
 connect(
     db=Config.MONGODB_SETTINGS["db"],

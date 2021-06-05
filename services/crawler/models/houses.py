@@ -1,10 +1,10 @@
 import re
 from typing import Optional, Tuple
 
-from requests_html import HTMLSession
-from PIL import Image, ImageEnhance
 import pytesseract
 from loguru import logger
+from PIL import Image, ImageEnhance
+from requests_html import HTMLSession
 from selenium.common.exceptions import NoSuchElementException
 
 from crawler.utils.driver import get_driver
