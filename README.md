@@ -44,6 +44,17 @@ pipenv install --dev
 
 #### Unit Test
 
+Load Fake Data to MongoDB
+
+```
+cd services
+python api/loader/csv_to_mongo.py --file api/tests/api/fake_houses.csv
+```
+
+```
+make tests
+```
+
 #### Coding style tests
 
 ```lan=shell

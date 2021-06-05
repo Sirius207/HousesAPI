@@ -3,6 +3,8 @@ from argparse import ArgumentParser
 import pandas as pd
 from loguru import logger
 from mongoengine import connect
+from mongoengine.errors import BulkWriteError
+
 
 from api.config import Config
 from api.endpoints.houses.model import House
@@ -42,5 +44,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     houses_data = get_houses(args.filename)
-    save_data_to_mongo(houses_data)
-    logger.success("Save data to MongoDB Successfully")
+    try:
+        save_data_to_mongo(houses_data)
+        logger.success("Save data to MongoDB Successfully")
+    except BulkWriteError as error:
+        logger.error(error)
