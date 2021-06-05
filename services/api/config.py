@@ -20,9 +20,9 @@ class Config:
 
     MONGODB_SETTINGS = {
         "host": os.environ.get("MONGO_HOST", "localhost"),
-        "db": os.environ.get("MONGO_DATABASE"),
-        "username": os.environ.get("MONGO_DB_USERNAME"),
-        "password": os.environ.get("MONGO_DB_PASSWORD"),
+        "db": os.environ.get("MONGO_DATABASE", "flaskdb"),
+        "username": os.environ.get("MONGO_DB_USERNAME", "apiuser"),
+        "password": os.environ.get("MONGO_DB_PASSWORD", "sample"),
     }
 
 
