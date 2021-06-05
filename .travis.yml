@@ -15,10 +15,10 @@ install:
   - pipenv install --dev
 
 before_script:
-  - cd services;export PYTHONPATH=$PYTHONPATH:$PWD
+  - export PYTHONPATH=$PYTHONPATH:$PWD/services
   - sleep 15
   - mongo flaskdb --eval 'db.createUser({user:"apiuser", pwd:"sample",roles:["readWrite"]});'
-  - python api/loader/csv_to_mongo.py --file api/tests/api/fake_houses.csv
+  - python services/api/loader/csv_to_mongo.py --file services/api/tests/api/fake_houses.csv
 
 # Run the unit test
 script:
