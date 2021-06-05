@@ -1,0 +1,15 @@
+[MESSAGES CONTROL]
+# C0111: missing-docstring
+# R0903: too-few-public-methods
+# W0703: Catching too general exception Exception
+# R0801: Similar lines
+# E1136: unsubscriptable-object
+# E0401: import-error
+disable=C0111, R0903, W0703, R0801, E1136, E0401
+max-line-length=120
+
+[SIMILARITIES]
+
+# Minimum lines number of a similarity.
+# Swap code to prevent 5 line of similarity is really silly
+min-similarity-lines=10

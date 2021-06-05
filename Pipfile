@@ -1,0 +1,39 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+flake8 = "==3.7.9"
+pylint = "==2.6.0"
+autopep8 = "==1.5.1"
+mypy = "==0.812"
+pre-commit = "==2.9.2"
+black = "==19.3b0"
+pytest-cov = "==2.10.1"
+pytest = "==6.1.2"
+commitizen = "*"
+isort = "==5.8.0"
+
+[packages]
+loguru = "==0.4.1"
+requests = "==2.23.0"
+selenium = "*"
+beautifulsoup4 = "*"
+pytesseract = "*"
+pandas = "*"
+requests-html = "*"
+pillow = "*"
+joblib = "*"
+mongoengine = "*"
+flask = "*"
+flask-mongoengine = "*"
+flask-restful = "==0.3.9"
+flask-migrate = "==2.5.2"
+python-dotenv = "==0.13.0"
+Werkzeug = "*"
+wheel = "*"
+elasticsearch = "*"
+
+[requires]
+python_version = "3.9"
