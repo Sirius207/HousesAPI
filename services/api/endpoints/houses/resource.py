@@ -40,13 +40,14 @@ class HousesOperator(Resource):
 
         add_common_arguments(
             self.post_parser,
-            "values",
+            "json",
             (
                 ("house_id", True),
                 ("title", True),
                 ("city", True),
                 ("district", True),
                 ("lessor", True),
+                ("lessor_gender", False),
                 ("lessor_identity", True),
                 ("house_type", False),
                 ("house_status", False),
@@ -60,14 +61,11 @@ class HousesOperator(Resource):
     @staticmethod
     def _query_conditions(args) -> dict:
         query_conditions = {}
-        if args["city"]:
-            query_conditions["city"] = args["city"]
-        if args["district"]:
-            query_conditions["district"] = args["district"]
-        if args["phone"]:
-            query_conditions["phone"] = args["phone"]
-        if args["house_type"]:
-            query_conditions["house_type"] = args["house_type"]
+
+        for query_param in ("city", "district", "phone", "house_type", "lessor_gender"):
+            if args[query_param]:
+                query_conditions[query_param] = args[query_param]
+
         if args["house_status"]:
             if args["house_status"] == "非車位":
                 query_conditions["house_status__nin"] = ("車位",)
@@ -75,10 +73,11 @@ class HousesOperator(Resource):
                 query_conditions["house_status"] = args["house_status"]
 
         if args["renter_gender"]:
-            if args["renter_gender"] == "男":
-                query_conditions["gender_requirement__in"] = ("男女生皆可", "男生")
-            elif args["renter_gender"] == "女":
-                query_conditions["gender_requirement__in"] = ("男女生皆可", "女生")
+            gender_map = {"男": ("男女生皆可", "男生"), "女": ("男女生皆可", "女生")}
+            if args["renter_gender"] in gender_map:
+                query_conditions["gender_requirement__in"] = gender_map[
+                    args["renter_gender"]
+                ]
 
         if args["lessor_identity"]:
             if args["lessor_identity"] == "屋主":
@@ -87,12 +86,8 @@ class HousesOperator(Resource):
                 query_conditions["lessor_identity__contains"] = "代理人"
             elif args["lessor_identity"] == "非屋主":
                 query_conditions["lessor_identity__nin"] = ("屋主", "屋主聲明：仲介勿擾")
-            elif args["lessor_identity"] == "仲介，收取服務費":
+            elif args["lessor_identity"] == "仲介":
                 query_conditions["lessor_identity__in"] = "仲介，收取服務費"
-
-        if args["lessor_gender"]:
-            lessor_gender = {"女": "小姐", "男": "先生"}
-            query_conditions["lessor__contains"] = lessor_gender[args["lessor_gender"]]
 
         if args["lessor_lastname"]:
             query_conditions["lessor__contains"] = args["lessor_lastname"]
@@ -118,6 +113,5 @@ class HousesOperator(Resource):
     def post(self):
         args = self.post_parser.parse_args()
         log_context("Request - Body", args)
-
         House(**args).save()
         return ({"data": None}, 200)

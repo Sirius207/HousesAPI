@@ -134,7 +134,9 @@ class House:
         self.district = nav[3].text
         self.house_status = nav[4].text
 
-        self.lessor, self.lessor_identity = self._get_lessor_info(html)
+        self.lessor, self.lessor_gender, self.lessor_identity = self._get_lessor_info(
+            html
+        )
 
         self.house_type = self._get_house_type(html)
         self.gender_requirement = self._get_gender_requirement(html)
@@ -143,18 +145,24 @@ class House:
 
     @staticmethod
     def _get_lessor_info(html) -> Tuple:
+        lessor_gender: Optional[str]
+        lessor_identity: Optional[str]
+
         lessor = html.find(".avatarRight i", first=True)
         if lessor:
             lessor = lessor.text
+            if "先生" in lessor:
+                lessor_gender = "男"
+            elif "小姐" in lessor:
+                lessor_gender = "女"
             # e.g. pick "代理人" from "蘇先生（代理人）"
             lessor_identity = html.find(".avatarRight div", first=True).text.replace(
                 lessor, ""
             )[1:-1]
         else:
-            lessor = None
-            lessor_identity = None
+            lessor = lessor_gender = lessor_identity = None
 
-        return lessor, lessor_identity
+        return lessor, lessor_gender, lessor_identity
 
     @staticmethod
     def _get_house_type(html) -> Optional[str]:
@@ -193,6 +201,7 @@ class House:
             "city": self.city,
             "district": self.district,
             "lessor": self.lessor,
+            "lessor_gender": self.lessor_gender,
             "lessor_identity": self.lessor_identity,
             "house_type": self.house_type,
             "house_status": self.house_status,

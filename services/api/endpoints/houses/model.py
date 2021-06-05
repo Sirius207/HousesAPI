@@ -7,6 +7,7 @@ class House(db.Document):
     city = db.StringField(max_length=6, required=True)
     district = db.StringField(max_length=6, required=True)
     lessor = db.StringField(max_length=10, required=True)
+    lessor_gender = db.StringField(max_length=2, required=False)
     lessor_identity = db.StringField(max_length=10, required=True)
     house_type = db.StringField(max_length=10, required=False)
     house_status = db.StringField(max_length=20, required=True)
