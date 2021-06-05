@@ -1,9 +1,13 @@
 from typing import List
 import json
+import os
 
 import pandas as pd
 from loguru import logger
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, helpers
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def get_houses(filepath: str = "data/temp_info.csv") -> List[dict]:
@@ -22,12 +26,18 @@ def get_houses(filepath: str = "data/temp_info.csv") -> List[dict]:
     return unique_df.to_dict("records")
 
 
-class ESOperator:
-    def __init__(self):
-        self.es = Elasticsearch(hosts=["localhost"], port=9200)
-        self.index = None
+class ESConfig:
+    host = os.environ.get("ES_HOST", "localhost")
+    port = int(os.environ.get("ES_PORT", 9200))
+    index = os.environ.get("ES_INDEX", "houses-demo")
 
-    def create_index(self, index: str = "houses-test"):
+
+class ESOperator:
+    def __init__(self, Config):
+        self.es = Elasticsearch(hosts=[Config.host], port=Config.port)
+        self.index = Config.index
+
+    def create_index(self, index: str):
 
         is_index_exist = self.es.indices.exists(index=index)
         if not is_index_exist:
@@ -74,11 +84,35 @@ class ESOperator:
         for record in data:
             self.es.index(index=self.index, body=record, id=record["house_id"])
 
+    def bulk_save(self, data: List[dict]):
+        insert_data = [
+            {
+                "_op_type": "index",
+                "_index": self.index,
+                "_id": record["house_id"],
+                "_source": record,
+            }
+            for record in data
+        ]
+        helpers.bulk(self.es, insert_data)
+
+    def bulk_delete(self, data: List[dict]):
+        remove_data = [
+            {
+                "_op_type": "index",
+                "_index": self.index,
+                "_id": record["house_id"],
+            }
+            for record in data
+        ]
+        helpers.bulk(self.es, remove_data)
+
 
 if __name__ == "__main__":
-    es = ESOperator()
-    es.create_index()
+    es = ESOperator(ESConfig)
+    es.create_index(ESConfig.index)
 
     houses = get_houses()
-    es.load_data(houses)
+    # es.load_data(houses)
+    es.bulk_save(houses)
     logger.success(f"success create {len(houses)} documents")
