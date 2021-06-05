@@ -72,12 +72,11 @@ class HousesOperator(Resource):
             else:
                 query_conditions["house_status"] = args["house_status"]
 
-        if args["renter_gender"]:
-            gender_map = {"男": ("男女生皆可", "男生"), "女": ("男女生皆可", "女生")}
-            if args["renter_gender"] in gender_map:
-                query_conditions["gender_requirement__in"] = gender_map[
-                    args["renter_gender"]
-                ]
+        gender_map = {"男": ("男女生皆可", "男生"), "女": ("男女生皆可", "女生")}
+        if args["renter_gender"] and args["renter_gender"] in gender_map:
+            query_conditions["gender_requirement__in"] = gender_map[
+                args["renter_gender"]
+            ]
 
         if args["lessor_identity"]:
             if args["lessor_identity"] == "屋主":
@@ -97,7 +96,9 @@ class HousesOperator(Resource):
     def get(self):
         args = self.get_parser.parse_args()
         query_conditions = self._query_conditions(args)
+        # pylint: disable= E1101
         houses = House.objects(**query_conditions)
+        # pylint: enable= E1101
         if not houses:
             return {"message": "not found", "len": 0, "data": []}, 404
 

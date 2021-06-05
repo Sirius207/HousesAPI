@@ -1,6 +1,6 @@
+from typing import List
 from argparse import ArgumentParser
 
-import pandas as pd
 from loguru import logger
 from mongoengine import connect
 from mongoengine.errors import BulkWriteError
@@ -8,23 +8,11 @@ from mongoengine.errors import BulkWriteError
 
 from api.config import Config
 from api.endpoints.houses.model import House
+from api.loader.load_csv import get_houses
 
 
-def get_houses(filepath: str = "data/temp_info.csv"):
-    df = pd.read_csv(filepath)
-
-    df["house_id"] = df["url"].map(
-        lambda url: url.replace("https://rent.591.com.tw/rent-detail-", "")[:-5]
-    )
-    df = df.drop(["url"], axis=1)
-
-    unique_df = df.drop_duplicates()
-    logger.info(f"Origin: {len(df)}, Drop Duplicates: {len(unique_df)}")
-
-    return unique_df.to_dict("records")
-
-
-def save_data_to_mongo(houses_data):
+# pylint: disable= E1101
+def save_data_to_mongo(houses_data: List[dict]):
 
     connect(
         db=Config.MONGODB_SETTINGS["db"],
@@ -38,14 +26,15 @@ def save_data_to_mongo(houses_data):
     House.objects.insert(houses)
 
 
+# pylint: enable= E1101
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-f", "--file", dest="filename", help="source file")
     args = parser.parse_args()
 
-    houses_data = get_houses(args.filename)
     try:
-        save_data_to_mongo(houses_data)
+        save_data_to_mongo(get_houses(args.filename))
         logger.success("Save data to MongoDB Successfully")
     except BulkWriteError as error:
         logger.error(error)

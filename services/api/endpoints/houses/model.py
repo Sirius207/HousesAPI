@@ -1,6 +1,7 @@
 from api.db import db
 
 
+# pylint: disable= E1101
 class House(db.Document):
     house_id = db.StringField(required=True, primary_key=True)
     title = db.StringField(max_length=20, required=True)
@@ -15,3 +16,6 @@ class House(db.Document):
     phone = db.StringField(max_length=20, required=False)
     gender_requirement = db.StringField(max_length=15, required=False)
     house_condition = db.StringField(required=True)
+
+
+# pylint: enable= E1101
