@@ -32,6 +32,7 @@ flask-migrate = "==2.5.2"
 python-dotenv = "==0.13.0"
 Werkzeug = "*"
 wheel = "*"
+elasticsearch = "*"
 
 [requires]
 python_version = "3.9"

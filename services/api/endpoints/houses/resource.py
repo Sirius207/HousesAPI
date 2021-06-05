@@ -32,12 +32,8 @@ class HousesOperator(Resource):
 
     @staticmethod
     def _get_fields(document_object):
-        api_result = json.loads(document_object.to_json())
 
-        hide_fields = ("_id",)
-        for hide_field in hide_fields:
-            del api_result[hide_field]
-        return api_result
+        return json.loads(document_object.to_json())
 
     def _set_post_parser(self):
         self.post_parser = reqparse.RequestParser()
@@ -46,7 +42,7 @@ class HousesOperator(Resource):
             self.post_parser,
             "values",
             (
-                ("url", True),
+                ("house_id", True),
                 ("title", True),
                 ("city", True),
                 ("district", True),

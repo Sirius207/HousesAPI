@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "cc2a36e58168d7047f9725cb74e64de84c128b3b3515c6a3aa7aa7093a02d6ab"
+            "sha256": "f6d88d4e2c25280ad2bbb74dfc569afbe59e2772c95eec2ea85e256d304699c8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -90,6 +90,14 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==2.1.0"
+        },
+        "elasticsearch": {
+            "hashes": [
+                "sha256:a09ae1de8869efa6ef2d9a0a9b9f6d9260b0c2506e83dd32bc1119a23fff49a5",
+                "sha256:d6bcca0b2e5665d08e6fe6fadc2d4d321affd76ce483603078fc9d3ccd2bc0f9"
+            ],
+            "index": "pypi",
+            "version": "==7.13.1"
         },
         "email-validator": {
             "hashes": [
@@ -622,7 +630,7 @@
                 "sha256:052774848f448cf19c7e959adf5566904d525f33a3f8b6ba6f6f8f26ec7de0cc",
                 "sha256:c2c1c2d44f158cdbddab7824a9af8c4f83c76b1e23e049479aa432feb6c4c23b"
             ],
-            "markers": "python_version >= '3.0'",
+            "markers": "python_version >= '3'",
             "version": "==2.2.1"
         },
         "sqlalchemy": {
@@ -674,7 +682,7 @@
                 "sha256:8d7eaa5a82a1cac232164990f04874c594c9453ec55eef02eab885aa02fc17a2",
                 "sha256:f5321fbe4bf3fefa0efd0bfe7fb14e90909eb62a48ccda331726b4319897dd5e"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_full_version < '4.0.0'",
             "version": "==1.25.11"
         },
         "w3lib": {
@@ -915,11 +923,11 @@
         },
         "identify": {
             "hashes": [
-                "sha256:3a74cf41f1a0bde21e2f196a1727a608629339d9897226bad07b22e0bbde6faa",
-                "sha256:7d4a73d58869a484d4ba8892793c80e30aa699e77707f26c1049486ef9be415f"
+                "sha256:3a8493cf49cfe4b28d50865e38f942c11be07a7b0aab8e715073e17f145caacc",
+                "sha256:96c57d493184daecc7299acdeef0ad7771c18a59931ea927942df393688fe849"
             ],
             "markers": "python_full_version >= '3.6.1'",
-            "version": "==2.2.8"
+            "version": "==2.2.9"
         },
         "iniconfig": {
             "hashes": [

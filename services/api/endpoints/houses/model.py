@@ -2,7 +2,7 @@ from db import db
 
 
 class House(db.Document):
-    url = db.StringField(required=True)
+    house_id = db.StringField(required=True, primary_key=True)
     title = db.StringField(max_length=20, required=True)
     city = db.StringField(max_length=6, required=True)
     district = db.StringField(max_length=6, required=True)
