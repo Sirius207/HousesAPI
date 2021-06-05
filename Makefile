@@ -24,7 +24,7 @@ black:
 	pipenv run black $(PKG) --skip-string-normalization
 
 isort:
-	pipenv run isort --recursive --apply
+	pipenv run isort .
 
 format: isort black
 

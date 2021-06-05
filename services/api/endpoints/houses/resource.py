@@ -2,8 +2,8 @@ import json
 
 from flask_restful import Resource, reqparse
 
-from endpoints.houses.model import House
-from endpoints.utils import add_common_arguments, log_context
+from api.endpoints.houses.model import House
+from api.endpoints.utils import add_common_arguments, log_context
 
 
 class HousesOperator(Resource):
