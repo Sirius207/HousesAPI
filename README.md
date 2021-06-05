@@ -1,7 +1,7 @@
 # HousesAPI
 A RESTful API for 591 website
 
-![Build Status](https://travis-ci.com/Sirius207/HousesAPI.svg?branch=main)
+[![Build Status](https://travis-ci.com/Sirius207/HousesAPI.svg?branch=main)](https://travis-ci.com/github/Sirius207/HousesAPI)
 [![Known Vulnerabilities](https://snyk.io/test/github/sirius207/HousesAPI/badge.svg)](https://snyk.io/test/github/sirius207/HousesAPI)
 [![Maintainability](https://api.codeclimate.com/v1/badges/d68c05d10bcbc59f45aa/maintainability)](https://codeclimate.com/github/Sirius207/HousesAPI/maintainability)
 [![Coverage Status](https://coveralls.io/repos/github/Sirius207/HousesAPI/badge.svg?branch=main)](https://coveralls.io/github/Sirius207/HousesAPI?branch=main)
@@ -24,10 +24,10 @@ A RESTful API for 591 website
 
 ### Prerequisites
 
-* python 3.7.3^
-* docker 18.09.2^
-* docker-compose 1.17.1^
-* git
+* python ^3.7.3
+* docker ^18.09.2
+* docker-compose ^1.17.1
+* Tesseract OCR
 
 ### Running Development
 
