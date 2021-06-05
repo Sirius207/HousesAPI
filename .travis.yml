@@ -24,6 +24,7 @@ before_script:
 script:
   - make lint
   - make test
+  - coverage run --source=services -m pytest
 
 # Push the results back to codecov
 after_success:
