@@ -42,7 +42,7 @@ POST_OUTPUT = {
     },
 }
 
-HOUSE_URL = "http://locahost:5000/api/houses"
+HOUSE_URL = f"http://locahost:5000{Config.API_PREFIX}/houses"
 
 
 # pylint: disable=W0621

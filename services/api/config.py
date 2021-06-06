@@ -18,6 +18,9 @@ class Config:
     DATE_TIME = "%Y-%m-%dT%H:%M:%S"
     TIME_ZONE = os.environ.get("TIME_ZONE", 8)
 
+    API_VERSION = os.environ.get("API_VERSION", "v1")
+    API_PREFIX = f"/{API_VERSION}/api"
+
     MONGODB_SETTINGS = {
         "host": os.environ.get("MONGO_HOST", "localhost"),
         "db": os.environ.get("MONGO_DATABASE", "flaskdb"),
