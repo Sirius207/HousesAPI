@@ -1,4 +1,5 @@
 import json
+from typing import Dict, Tuple
 
 from flask_restful import Resource, reqparse
 
@@ -27,6 +28,7 @@ class HousesOperator(Resource):
                 ("lessor_identity", False),
                 ("lessor_gender", False),
                 ("lessor_lastname", False),
+                ("explain", False),
             ),
         )
 
@@ -93,9 +95,7 @@ class HousesOperator(Resource):
 
         return query_conditions
 
-    def get(self):
-        args = self.get_parser.parse_args()
-        query_conditions = self._query_conditions(args)
+    def _get_data(self, query_conditions: dict) -> Tuple[Dict[str, object], int]:
         # pylint: disable= E1101
         houses = House.objects(**query_conditions)
         # pylint: enable= E1101
@@ -111,7 +111,23 @@ class HousesOperator(Resource):
             200,
         )
 
-    def post(self):
+    @staticmethod
+    def _get_explain(query_conditions: dict) -> Tuple[Dict[str, object], int]:
+        # pylint: disable= E1101
+        explain = House.objects(**query_conditions).explain()
+        # pylint: enable= E1101
+        return ({"message": "success", "explain": explain}, 200)
+
+    def get(self) -> Tuple[Dict[str, object], int]:
+        args = self.get_parser.parse_args()
+        query_conditions = self._query_conditions(args)
+
+        if args["explain"] == "on":
+            return self._get_explain(query_conditions)
+
+        return self._get_data(query_conditions)
+
+    def post(self) -> Tuple[Dict[str, object], int]:
         args = self.post_parser.parse_args()
         log_context("Request - Body", args)
         House(**args).save()
