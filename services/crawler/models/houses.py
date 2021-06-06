@@ -148,8 +148,8 @@ class House:
 
     @staticmethod
     def _get_lessor_info(html) -> Tuple:
-        lessor_gender: Optional[str]
-        lessor_identity: Optional[str]
+        lessor_gender: Optional[str] = None
+        lessor_identity: Optional[str] = None
 
         lessor = html.find(".avatarRight i", first=True)
         if lessor:
@@ -163,7 +163,7 @@ class House:
                 lessor, ""
             )[1:-1]
         else:
-            lessor = lessor_gender = lessor_identity = None
+            lessor = None
 
         return lessor, lessor_gender, lessor_identity
 
