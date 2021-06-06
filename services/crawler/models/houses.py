@@ -3,11 +3,13 @@ from typing import Optional, Tuple
 
 import pytesseract
 from loguru import logger
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageFilter
 from requests_html import HTMLSession
 from selenium.common.exceptions import NoSuchElementException
 
 from crawler.utils.driver import get_driver
+
+logger.add("house_parse.log", level="DEBUG")
 
 
 class PhoneOperator:
@@ -20,33 +22,52 @@ class PhoneOperator:
             return phone
 
         # Method 2. recognize image directly
-        phone = cls._get_phone_from_image(html)
+        phone, order = cls._get_phone_from_image(html)
 
         # Method 3. recognize image from screenshot
         if not phone or not cls._validate_phone_str(phone):
             logger.warning(f"{url}: image detect: {phone} -> parse screenshot ")
             phone = cls._get_phone_from_screenshot(url)
+        else:
+            logger.success(f"{url}: {order} method -> {phone}")
+            return phone
 
         if not phone or not cls._validate_phone_str(phone):
-            logger.error(f"{url}: parse screenshot -> {phone}")
+            logger.error(f"{url}: parse screenshot fail -> {phone}")
         else:
             logger.success(f"{url}: parse screenshot -> {phone}")
 
         return phone
 
     @classmethod
-    def _get_phone_from_image(cls, html) -> Optional[str]:
+    def _get_phone_from_image(cls, html) -> Tuple[Optional[str], str]:
         image_element = html.find(".num img", first=True)
         if not image_element:
-            return None
+            return None, "Zero"
         image_url = f'https:{image_element.attrs["src"]}'
         session = HTMLSession()
         image = Image.open(session.get(image_url, stream=True).raw)
+        backup_image = image.copy()
 
         image = image.convert("L")
-        image = ImageEnhance.Brightness(image).enhance(0.5)
+        image = ImageEnhance.Brightness(image).enhance(0.9)
+        image = image.filter(ImageFilter.SMOOTH())
+        image = ImageEnhance.Contrast(image).enhance(2.0)
+        image = ImageEnhance.Sharpness(image).enhance(2.0)
 
-        return cls._image_to_phone(image)
+        phone = cls._image_to_phone(image)
+
+        if not cls._validate_phone_str(phone):
+            logger.warning(f"image first detect: {phone} -> second method")
+            backup_image = backup_image.convert("L")
+            backup_image = ImageEnhance.Brightness(backup_image).enhance(0.9)
+            backup_image = ImageEnhance.Contrast(backup_image).enhance(2.0)
+            backup_image = ImageEnhance.Sharpness(backup_image).enhance(2.0)
+            phone = cls._image_to_phone(backup_image)
+
+            return phone, "second"
+
+        return phone, "first"
 
     @staticmethod
     def _image_to_phone(image) -> str:

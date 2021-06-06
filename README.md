@@ -54,7 +54,7 @@ docker-compose up -d
 Build API Docker Image
 ```
 docker build . -t house-api-img --no-cache
-docker run  --env-file .env --name house-api -d -p 5000:5000 house-api-img --network host
+docker run  --env-file .env --name house-api -d -p 5000:5000 house-api-img
 ```
 
 ### Running the tests
