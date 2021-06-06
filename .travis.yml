@@ -19,6 +19,7 @@ before_script:
   - sleep 15
   - mongo flaskdb --eval 'db.createUser({user:"apiuser", pwd:"sample",roles:["readWrite"]});'
   - python services/api/loader/csv_to_mongo.py --file services/api/tests/api/fake_houses.csv
+  - python api/loader/init_account.py
 
 # Run the unit test
 script:

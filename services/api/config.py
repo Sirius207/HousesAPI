@@ -25,6 +25,11 @@ class Config:
         "password": os.environ.get("MONGO_DB_PASSWORD", "sample"),
     }
 
+    ADMIN_USER = {
+        "username": os.environ.get("ADMIN_USER_NAME", "admin"),
+        "token": os.environ.get("ADMIN_USER_TOKEN"),  # uuid
+    }
+
 
 class DevelopmentConfig(Config):
     """ "configuration class for dev env"""

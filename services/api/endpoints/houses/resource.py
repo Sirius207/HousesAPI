@@ -4,7 +4,8 @@ from typing import Dict, Tuple
 from flask_restful import Resource, reqparse
 
 from api.endpoints.houses.model import House
-from api.endpoints.utils import add_common_arguments, log_context
+from api.endpoints.utils import add_common_arguments, add_auth_argument, log_context
+from api.endpoints.accounts.auth import authorization_validator
 
 
 class HousesOperator(Resource):
@@ -31,6 +32,8 @@ class HousesOperator(Resource):
                 ("explain", False),
             ),
         )
+
+        add_auth_argument(self.get_parser)
 
     @staticmethod
     def _get_fields(document_object):
@@ -118,8 +121,10 @@ class HousesOperator(Resource):
         # pylint: enable= E1101
         return ({"message": "success", "explain": explain}, 200)
 
+    @authorization_validator("user")
     def get(self) -> Tuple[Dict[str, object], int]:
         args = self.get_parser.parse_args()
+
         query_conditions = self._query_conditions(args)
 
         if args["explain"] == "on":
@@ -127,8 +132,9 @@ class HousesOperator(Resource):
 
         return self._get_data(query_conditions)
 
+    @authorization_validator("admin")
     def post(self) -> Tuple[Dict[str, object], int]:
         args = self.post_parser.parse_args()
         log_context("Request - Body", args)
         House(**args).save()
-        return ({"data": None}, 200)
+        return ({"data": None}, 201)

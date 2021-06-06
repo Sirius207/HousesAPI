@@ -69,6 +69,11 @@ export PYTHONPATH=$PYTHONPATH:$PWD
 python api/loader/csv_to_mongo.py --file api/tests/api/fake_houses.csv
 ```
 
+create default api account
+```
+python api/loader/init_account.py
+```
+
 Execute Tests
 ```
 make tests
