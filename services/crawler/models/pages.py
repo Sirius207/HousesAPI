@@ -110,10 +110,12 @@ class HousePageOperator:
                 is_next_page = self.click_next_page(new_page)
 
 
-def parse_houses_url(output_file):
+def parse_houses_url(output_file, city_id=1):
     try:
         house_parser = HousePageOperator()
-        house_parser.save_all_house_url(output_file=output_file, page_limit=299)
+        house_parser.save_all_house_url(
+            output_file=output_file, city_id=city_id, page_limit=3
+        )
     finally:
         logger.success("Quit Driver")
         house_parser.driver.quit()

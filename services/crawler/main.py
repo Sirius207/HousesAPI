@@ -37,7 +37,7 @@ def _export_house_data_to_csv(output_file: str, houses: dict):
 
 def main():
     local_url_file = "data/urls.csv"
-    parse_houses_url(local_url_file)
+    parse_houses_url(local_url_file, city_id=1)
     basic_houses_info = _load_basic_houses_info(local_url_file, 0, 250)
     houses = _parallel_parse_house_data(basic_houses_info)
 
