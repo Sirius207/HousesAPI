@@ -85,6 +85,11 @@ Execute Tests
 make tests
 ```
 
+create API Doc (Use [Aglio](https://github.com/danielgtaylor/aglio/issues))
+```
+aglio --theme-variables streak  -i api.apib --theme-template triple -o doc/api.html
+```
+
 #### Coding style tests
 
 ```lan=shell
