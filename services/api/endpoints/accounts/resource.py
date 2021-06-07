@@ -6,7 +6,7 @@ from werkzeug.exceptions import abort
 
 from api.endpoints.accounts.model import Account
 from api.endpoints.accounts.auth import authorization_validator
-from api.endpoints.utils import add_common_arguments, log_context
+from api.endpoints.utils import add_common_arguments, add_auth_argument, log_context
 
 
 class AccountsOperator(Resource):
@@ -20,6 +20,8 @@ class AccountsOperator(Resource):
         add_common_arguments(
             self.post_parser, "json", (("username", True), ("user_role", True))
         )
+
+        add_auth_argument(self.post_parser)
 
     @authorization_validator("admin")
     def post(self):
@@ -55,4 +57,4 @@ class AccountsOperator(Resource):
         new_account["key_expire_at"] = new_account["key_expire_at"].strftime(
             "%Y-%m-%dT%H:%M:%S"
         )
-        return ({"data": new_account}, 200)
+        return ({"message": "success", "data": new_account}, 200)

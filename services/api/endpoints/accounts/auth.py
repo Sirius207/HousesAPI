@@ -38,7 +38,12 @@ def _valid_token(token: str, user_role):
 def authorization_validator(user_role) -> Callable:
     def decorator(func) -> Callable:
         def wrapper(req_object) -> Callable:
-            args = req_object.get_parser.parse_args()
+            if func.__name__ == "get":
+                parser = req_object.get_parser
+            else:
+                parser = req_object.post_parser
+
+            args = parser.parse_args()
             _valid_token(args["Authorization"], user_role)
             return func(req_object)
 

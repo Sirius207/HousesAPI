@@ -63,6 +63,8 @@ class HousesOperator(Resource):
             ),
         )
 
+        add_auth_argument(self.post_parser)
+
     @staticmethod
     def _query_conditions(args) -> dict:
         query_conditions = {}
@@ -135,6 +137,7 @@ class HousesOperator(Resource):
     @authorization_validator("admin")
     def post(self) -> Tuple[Dict[str, object], int]:
         args = self.post_parser.parse_args()
+        del args["Authorization"]
         log_context("Request - Body", args)
         House(**args).save()
         return ({"data": None}, 201)
