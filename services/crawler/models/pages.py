@@ -122,5 +122,4 @@ def parse_houses_url(output_file, city_id=1):
 
 
 if __name__ == "__main__":
-    local_url_file = "data/urls.csv"
-    parse_houses_url(local_url_file)
+    parse_houses_url("data/urls.csv")
