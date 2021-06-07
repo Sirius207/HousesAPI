@@ -32,7 +32,7 @@ class AccountsOperator(Resource):
             abort(400, "username exists")
 
         if args["user_role"] not in ("admin", "user"):
-            return ({"message": "invalid user_role"}), 400
+            abort(400, "invalid user_role")
 
         if args["user_role"] == "admin":
             month_api_limit = 5000
