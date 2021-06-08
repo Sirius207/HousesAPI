@@ -35,7 +35,7 @@ POST_INPUT = {
 }
 
 POST_OUTPUT = {
-    "wrong_token": {"status": 403},
+    "wrong_token": {"status": 401},
     "success": {
         "status": 201,
         "body": json.dumps({"data": None}),
@@ -81,7 +81,7 @@ GET_INPUT = {
 }
 
 GET_OUTPUT = {
-    "wrong_token": {"status": 403},
+    "wrong_token": {"status": 401},
     "all": {"status": 200, "len": 10},
     "no_data": {"status": 404, "len": 0},
     "city-renter_gender": {"status": 200, "len": 6},
