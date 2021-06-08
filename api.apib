@@ -114,10 +114,10 @@ Represents House Details
             Authorization: wrongtoken
 
 
-+ Response 403 (application/json)
++ Response 401 (application/json)
 
         {
-            "message": "Forbiden"
+            "message": "Invalid token"
         }
 
 
@@ -185,10 +185,10 @@ Represents House Details
             Authorization: wrongtoken
 
 
-+ Response 403 (application/json)
++ Response 401 (application/json)
 
         {
-            "message": "Forbiden"
+            "message": "Invalid token"
         }
 
 ## Houses Collection [/houses/{?renter_gender,city,district,house_type,house_status,phone,lessor_identity,lessor_gender,lessor_lastname,explain}]
@@ -422,8 +422,8 @@ Represents Accounts Details
             Authorization: wrongtoken
 
 
-+ Response 403 (application/json)
++ Response 401 (application/json)
 
         {
-            "message": "Forbiden"
+            "message": "Invalid token"
         }

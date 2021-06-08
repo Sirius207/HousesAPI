@@ -13,7 +13,7 @@ def _valid_token(token: str, user_role):
     # 1. account exist
     if not account:
         logger.warning(f"Authorization token {token} not found")
-        abort(403, "Forbiden")
+        abort(401, "Invalid token")
 
     # 2. valid user role
     if account.user_role != user_role and account.user_role != "admin":
@@ -25,14 +25,14 @@ def _valid_token(token: str, user_role):
     expired_time = account.key_expire_at.timestamp()
     if current_time - expired_time > 0:
         logger.warning(f"Authorization expired: {current_time} > {expired_time}")
-        abort(403, "Forbiden")
+        abort(401, "Token expired")
 
     # 4. valid quota
     if account.api_quota > 0:
         account.api_quota -= 1
         account.save()
     else:
-        abort(403, "No quota this month")
+        abort(401, "No quota this month")
 
 
 def authorization_validator(user_role) -> Callable:
