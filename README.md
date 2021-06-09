@@ -46,10 +46,22 @@ pipenv shell
 
 a. add .env to environment/
 
-b. Run docker containers
+b. setup [elasticSearch Account](https://www.elastic.co/guide/en/elastic-stack-get-started/7.13/get-started-docker.html#get-started-docker-tls) at first usage
 
 ```
 cd environment
+docker-compose -f create-certs.yml run --rm create_certs
+docker-compose up -d
+docker exec es01 /bin/bash -c "bin/elasticsearch-setup-passwords auto --batch --url https://es01:9200"
+docker-compose down
+```
+
+c. setup ELASTICSEARCH_PASSWORD in .env
+
+d. copy es01.crt & kib01.crt to your computer
+
+e. restart
+```
 docker-compose up -d
 ```
 
