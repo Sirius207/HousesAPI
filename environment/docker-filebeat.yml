@@ -1,0 +1,30 @@
+version: '2.2'
+
+services:
+  filebeat:
+    user: root
+    image: docker.elastic.co/beats/filebeat:${VERSION}
+    container_name: filebeat01
+    command: --strict.perms=false
+    env_file:
+      - ./.env
+    ports:
+      - 9000:9000
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - mongodblog:/var/log/mongodb/
+      - certs:$CERTS_DIR
+    networks:
+      - elastic
+
+networks:
+  elastic:
+    driver: bridge
+
+volumes:
+  mongodblog:
+    driver: local
+  certs:
+    driver: local

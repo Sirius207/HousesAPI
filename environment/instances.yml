@@ -24,3 +24,8 @@ instances:
     dns:
       - kib01
       - localhost
+
+  - name: filebeat
+    dns:
+      - filebeat
+      - localhost

@@ -58,11 +58,23 @@ docker-compose down
 
 c. setup ELASTICSEARCH_PASSWORD in .env
 
-d. copy es01.crt & kib01.crt to your computer
+d. copy es01.crt & kib01.crt to your computer and set certificate
+```
+docker cp es01:/usr/share/elasticsearch/config/certificates/es01/es01.crt ./
+docker cp es01:/usr/share/elasticsearch/config/certificates/kib01/kib01.crt  ./
+```
 
 e. restart
 ```
 docker-compose up -d
+```
+
+f. let filebeat get mongodb log
+```
+docker exec -it filebeat01 bash
+filebeat modules enable mongodb
+filebeat setup
+filebeat -e
 ```
 
 ### Running Production
