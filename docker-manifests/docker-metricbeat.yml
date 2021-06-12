@@ -1,0 +1,27 @@
+version: '2.2'
+
+services:
+  metricbeat:
+    container_name: metricbeat01
+    image: docker.elastic.co/beats/metricbeat:${ELASTIC_VERSION:-7.9.1}
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./subconfigs/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+      - ./subconfigs/metric-mongo.yml:/usr/share/metricbeat/modules.d/mongo.yml
+      - metricbeatdata:/usr/share/metricbeat/data
+      - certs:$CERTS_DIR
+    env_file:
+      - ./.env
+    networks:
+      - elastic
+
+networks:
+  elastic:
+    driver: bridge
+
+volumes:
+  metricbeatdata:
+    driver: local
+  certs:
+    driver: local

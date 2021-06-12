@@ -21,6 +21,12 @@ services:
     volumes:
       - mongodbdata:/data/db
       - mongodblog:/var/log/mongodb/
+    networks:
+      - elastic
+
+networks:
+  elastic:
+    driver: bridge
 
 volumes:
   mongodbdata:
