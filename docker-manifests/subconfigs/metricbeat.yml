@@ -1,0 +1,30 @@
+
+setup.ilm.overwrite: true
+setup.dashboards:
+  enabled: true
+
+processors:
+  add_cloud_metadata: ~
+  add_docker_metadata: ~
+
+setup.kibana:
+  host: "https://kib01:5601"
+  protocol: "https"
+  ssl.enabled: true
+  ssl.certificate_authorities: ${CERTS_DIR}/ca/ca.crt
+  ssl.certificate: ${CERTS_DIR}/kib01/kib01.crt
+  ssl.key: ${CERTS_DIR}/kib01/kib01.key
+
+output.elasticsearch:
+  hosts: ["https://es01:9200"]
+  username: elastic
+  password: ${ELASTIC_PASSWORD}
+  protocol: https
+  ssl.certificate_authorities: ${CERTS_DIR}/ca/ca.crt
+  ssl.certificate: ${CERTS_DIR}/es01/es01.crt
+  ssl.key: ${CERTS_DIR}/es01/es01.key
+
+metricbeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false

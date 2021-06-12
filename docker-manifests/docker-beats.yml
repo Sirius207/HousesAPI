@@ -1,0 +1,73 @@
+version: '2.2'
+
+services:
+  filebeat:
+    user: root
+    image: docker.elastic.co/beats/filebeat:${VERSION}
+    container_name: filebeat01
+    command: --strict.perms=false
+    env_file:
+      - ./.env
+    ports:
+      - 9000:9000
+    volumes:
+      - ./subconfigs/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./subconfigs/filebeat-es.yml:/usr/share/filebeat/modules.d/elasticsearch.yml
+      - ./subconfigs/filebeat-mongo.yml:/usr/share/filebeat/modules.d/mongodb.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - mongodblog:/var/log/mongodb/
+      - certs:$CERTS_DIR
+    networks:
+      - elastic
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:${VERSION}
+    container_name: apm01
+    cap_add: ["CHOWN", "DAC_OVERRIDE", "SETGID", "SETUID"]
+    cap_drop: ["ALL"]
+    env_file:
+      - ./.env
+    ports:
+      - 8200:8200
+    networks:
+      - elastic
+    command: >
+       apm-server -e
+         -E apm-server.rum.enabled=true
+         -E setup.template.settings.index.number_of_replicas=0
+    volumes:
+      - ./subconfigs/apm-server.yml:/usr/share/apm-server/apm-server.yml
+      - certs:$CERTS_DIR
+    healthcheck:
+      interval: 10s
+      retries: 12
+      test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://localhost:8200/
+
+  metricbeat:
+    container_name: metricbeat01
+    image: docker.elastic.co/beats/metricbeat:${ELASTIC_VERSION:-7.9.1}
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./subconfigs/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+      - ./subconfigs/metric-mongo.yml:/usr/share/metricbeat/modules.d/mongo.yml
+      - metricbeatdata:/usr/share/metricbeat/data
+      - certs:$CERTS_DIR
+    env_file:
+      - ./.env
+    networks:
+      - elastic
+
+volumes:
+  certs:
+    driver: local
+  mongodblog:
+    driver: local
+  metricbeatdata:
+    driver: local
+
+
+networks:
+  elastic:
+    driver: bridge

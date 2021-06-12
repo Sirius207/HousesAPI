@@ -10,6 +10,15 @@ import time
 from flask import request as req
 
 
+def add_auth_argument(parser):
+    parser.add_argument(
+        "Authorization",
+        type=str,
+        required=True,
+        location="headers",
+    )
+
+
 def add_common_arguments(parser, location, arguments):
     for arg, required in arguments:
         parser.add_argument(
