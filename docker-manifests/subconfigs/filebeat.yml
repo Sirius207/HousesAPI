@@ -36,12 +36,3 @@ setup.kibana:
 
 setup.ilm.overwrite: true
 setup.dashboards.enabled: true
-
-filebeat.modules:
-  - module: mongodb
-    log:
-      enabled: true
-      var.paths: ["/var/log/mongodb/*.log"]
-  - module: elasticsearch
-    server:
-      enabled: true
