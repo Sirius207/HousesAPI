@@ -28,9 +28,20 @@ class Config:
         "password": os.environ.get("MONGO_DB_PASSWORD", "sample"),
     }
 
+    # API Account
     ADMIN_USER = {
         "username": os.environ.get("ADMIN_USER_NAME", "admin"),
         "token": os.environ.get("ADMIN_USER_TOKEN"),  # uuid
+    }
+
+    ELASTIC_APM = {
+        "SERVICE_NAME": "house-api",
+        "SERVER_URL": "http://localhost:8200",
+        "DEBUG": True,
+        "SECRET_TOKEN": os.environ.get("APM_TOKEN"),
+        "TRACES_SEND_FREQ": 5,
+        "FLUSH_INTERVAL": 1,
+        "MAX_QUEUE_SIZE": 1,
     }
 
 

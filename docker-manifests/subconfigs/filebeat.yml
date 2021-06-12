@@ -21,7 +21,7 @@ output.logstash:
 output.elasticsearch:
   hosts: ["https://es01:9200"]
   username: elastic
-  password: FlbljwYLuatZ4GznDx8E
+  password: ${ELASTIC_PASSWORD}
   protocol: https
   ssl.certificate_authorities: ${CERTS_DIR}/ca/ca.crt
   ssl.certificate: ${CERTS_DIR}/es01/es01.crt

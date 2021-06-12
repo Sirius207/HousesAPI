@@ -11,7 +11,7 @@ services:
     ports:
       - 9000:9000
     volumes:
-      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./subconfigs/filebeat.yml:/usr/share/filebeat/filebeat.yml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - mongodblog:/var/log/mongodb/

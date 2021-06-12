@@ -1,6 +1,7 @@
 import json
 from typing import Dict, Tuple
 
+import elasticapm
 from flask_restful import Resource, reqparse
 
 from api.endpoints.houses.model import House
@@ -123,6 +124,7 @@ class HousesOperator(Resource):
         # pylint: enable= E1101
         return ({"message": "success", "explain": explain}, 200)
 
+    @elasticapm.capture_span()
     @authorization_validator("user")
     def get(self) -> Tuple[Dict[str, object], int]:
         args = self.get_parser.parse_args()
@@ -134,6 +136,7 @@ class HousesOperator(Resource):
 
         return self._get_data(query_conditions)
 
+    @elasticapm.capture_span()
     @authorization_validator("admin")
     def post(self) -> Tuple[Dict[str, object], int]:
         args = self.post_parser.parse_args()

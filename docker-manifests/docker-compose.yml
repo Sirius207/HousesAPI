@@ -119,6 +119,17 @@ services:
       SERVER_SSL_ENABLED: "true"
       SERVER_SSL_KEY: $CERTS_DIR/kib01/kib01.key
       SERVER_SSL_CERTIFICATE: $CERTS_DIR/kib01/kib01.crt
+      monitoring.enabled: "true"
+      elasticsearch.ssl.verificationMode: none
+      xpack.apm.ui.enabled: "true"
+      xpack.graph.enabled: "true"
+      xpack.ml.enabled: "true"
+      xpack.monitoring.enabled: "true"
+      xpack.reporting.enabled: "true"
+      xpack.security.enabled: "true"
+      xpack.grokdebugger.enabled: "true"
+      xpack.searchprofiler.enabled: "true"
+
     volumes:
       - certs:$CERTS_DIR
     networks:

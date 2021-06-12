@@ -69,12 +69,18 @@ e. restart
 docker-compose up -d
 ```
 
-f. let filebeat get mongodb log
+f. setup filebeat
 ```
 docker exec -it filebeat01 bash
 filebeat modules enable mongodb
 filebeat setup
 filebeat -e
+```
+
+g. setup apm
+```
+docker exec -it apm01 bash
+apm-server -e
 ```
 
 ### Running Production
