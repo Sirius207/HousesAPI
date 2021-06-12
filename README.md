@@ -19,7 +19,7 @@ A RESTful API for 591 website
 - [x] RESTful API with MongoDB
 - [x] ElasticSearch Storage
 - [x] Kibana Dashboard
-- [ ] Aglio API Doc
+- [x] Aglio API Doc
 - [ ] Crawler (Airflow Format)
 - [ ] Prometheus Setup
 - [ ] Grafana Dashboard
@@ -42,18 +42,24 @@ make init
 pipenv shell
 ```
 
-2. Activate MongoDB and ElasticSearch
+2. Activate MongoDB
+```
+cd docker-manifests
+docker-compose -f docker-mongo.yml up -d
+```
+
+3. Activate ElasticSearch, Kibana
 
 a. add .env to environment/
 
 b. setup [elasticSearch Account](https://www.elastic.co/guide/en/elastic-stack-get-started/7.13/get-started-docker.html#get-started-docker-tls) at first usage
 
 ```
-cd environment
+cd docker-manifests
 docker-compose -f create-certs.yml run --rm create_certs
-docker-compose up -d
+docker-compose -f docker-elastic.yml up -d
 docker exec es01 /bin/bash -c "bin/elasticsearch-setup-passwords auto --batch --url https://es01:9200"
-docker-compose down
+docker-compose -f docker-elastic.yml down
 ```
 
 c. setup ELASTICSEARCH_PASSWORD in .env
@@ -64,26 +70,40 @@ docker cp es01:/usr/share/elasticsearch/config/certificates/es01/es01.crt ./
 docker cp es01:/usr/share/elasticsearch/config/certificates/kib01/kib01.crt  ./
 ```
 
-e. restart
+e. restart elasticsearch & kibana
 ```
-docker-compose up -d
+docker-compose  -f docker-elastic.yml up -d
 ```
 
-f. setup filebeat
+4. Activate Filebeat, APM, MetricBeat
+
+a. start filebeat, apm, metricbeat
+```
+cd docker-manifests
+docker-compose -f docker-beats.yml up -d
+```
+
+b. setup filebeat
 ```
 docker exec -it filebeat01 bash
-filebeat modules enable mongodb
 filebeat setup
 filebeat -e
 ```
 
-g. setup apm
+c. setup apm
 ```
 docker exec -it apm01 bash
 apm-server -e
 ```
 
-### Running Production
+d. setup metricbeat
+```
+docker exec -it metricbeat01 bash
+metricbeat01 setup
+metricbeat01 -e
+```
+
+### Running Production (API)
 
 Build API Docker Image
 ```
@@ -101,7 +121,7 @@ pipenv install --dev
 
 #### Unit Test
 
-Load Fake Data to MongoDB
+Insert Fake Data to MongoDB
 
 ```
 cd services
