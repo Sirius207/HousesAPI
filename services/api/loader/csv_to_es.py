@@ -2,6 +2,7 @@ import json
 import os
 from typing import List
 from argparse import ArgumentParser
+from ssl import create_default_context, CERT_REQUIRED
 
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch, helpers
@@ -17,11 +18,22 @@ class ESConfig:
     host = os.environ.get("ES_HOST", "localhost")
     port = int(os.environ.get("ES_PORT", 9200))
     index = os.environ.get("ES_INDEX", "houses-data")
+    username = os.environ.get("ES_USER")
+    password = os.environ.get("ES_PASSWORD")
 
 
 class ESOperator:
     def __init__(self, Config):
-        self.es_conn = Elasticsearch(hosts=[Config.host], port=Config.port)
+        context = create_default_context(cafile="data/es01.crt")
+        context.load_verify_locations(cafile="data/ca.crt")
+        context.verify_mode = CERT_REQUIRED
+        self.es_conn = Elasticsearch(
+            hosts=[Config.host],
+            port=Config.port,
+            http_auth=(Config.username, Config.password),
+            scheme="https",
+            ssl_context=context,
+        )
         self.index = Config.index
 
     def create_index(self, index: str):
