@@ -7,22 +7,24 @@ A RESTful API for 591 website
 [![codecov](https://codecov.io/gh/Sirius207/HousesAPI/branch/main/graph/badge.svg?token=91PJ2CWMR0)](https://codecov.io/gh/Sirius207/HousesAPI)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FSirius207%2FHousesAPI.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FSirius207%2FHousesAPI?ref=badge_shield)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
-
-
-[API Document](https://sirius207.github.io/HousesAPI/)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=flat-square)](https://conventionalcommits.org)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?style=flat-square&logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 ## Features
 
-- [x] 591 Crawler
-- [x] MongoDB Format
-- [x] RESTful API with MongoDB
+- [x] 591 house data Crawler
+- [x] RESTful API with MongoDB for house data querying and creating
+- [x] RESTful API with Token Authorization
+- [x] API Doc built with Aglio
 - [x] ElasticSearch Storage
-- [x] Kibana Dashboard
-- [x] Aglio API Doc
-- [ ] Crawler (Airflow Format)
-- [ ] Prometheus Setup
-- [ ] Grafana Dashboard
+- [x] House Data with Kibana Display
+- [x] Filebeat Log Dashboard for MongoDB
+- [x] APM Dashboard for API application
+- [x] Metricbeat Dashboard for MongoDB
+
+## Documents
+
+- [API Document](https://sirius207.github.io/HousesAPI/)
 
 ## Getting Started
 
@@ -31,28 +33,29 @@ A RESTful API for 591 website
 * python ^3.7.3
 * docker ^18.09.2
 * docker-compose ^1.17.1
-* Tesseract OCR
+* Tesseract OCR ^4.x
+
 
 ### Running Development
 
-1. Install pipenv environment
+a. Install pipenv environment
 
 ```lan=shell
 make init
 pipenv shell
 ```
 
-2. Activate MongoDB
+b. Activate MongoDB
 ```
 cd docker-manifests
 docker-compose -f docker-mongo.yml up -d
 ```
 
-3. Activate ElasticSearch, Kibana
+c. Activate ElasticSearch, Kibana
 
-a. add .env to environment/
+1. add .env to environment/
 
-b. setup [elasticSearch Account](https://www.elastic.co/guide/en/elastic-stack-get-started/7.13/get-started-docker.html#get-started-docker-tls) at first usage
+2. setup [elasticSearch Account](https://www.elastic.co/guide/en/elastic-stack-get-started/7.13/get-started-docker.html#get-started-docker-tls) at first usage
 
 ```
 cd docker-manifests
@@ -62,45 +65,79 @@ docker exec es01 /bin/bash -c "bin/elasticsearch-setup-passwords auto --batch --
 docker-compose -f docker-elastic.yml down
 ```
 
-c. setup ELASTICSEARCH_PASSWORD in .env
+3. setup ELASTICSEARCH_PASSWORD in .env
 
-d. copy es01.crt & kib01.crt to your computer and set certificate
+4. copy es01.crt & kib01.crt to your computer and set certificate
 ```
 docker cp es01:/usr/share/elasticsearch/config/certificates/es01/es01.crt ./
 docker cp es01:/usr/share/elasticsearch/config/certificates/kib01/kib01.crt  ./
 ```
 
-e. restart elasticsearch & kibana
+5. restart elasticsearch & kibana
 ```
 docker-compose  -f docker-elastic.yml up -d
 ```
 
-4. Activate Filebeat, APM, MetricBeat
+d. Activate Filebeat, APM, MetricBeat
 
-a. start filebeat, apm, metricbeat
+1. start filebeat, apm, metricbeat
 ```
 cd docker-manifests
 docker-compose -f docker-beats.yml up -d
 ```
 
-b. setup filebeat
+2. setup filebeat
 ```
 docker exec -it filebeat01 bash
 filebeat setup
 filebeat -e
 ```
 
-c. setup apm
+3. setup apm
 ```
 docker exec -it apm01 bash
 apm-server -e
 ```
 
-d. setup metricbeat
+4. setup metricbeat
 ```
 docker exec -it metricbeat01 bash
 metricbeat01 setup
 metricbeat01 -e
+```
+
+e. Execute Crawler
+
+parse house data in Taipei (city_id=1) and Export House data to csv
+```
+cd services
+export PYTHONPATH=$PYTHONPATH:$PWD
+
+python crawler/main.py \
+    --urls_file data/urls.csv \
+    --data_file data/temp_info.csv\
+    --city_id 1 \
+    --url_start 0 \
+    --url_end 250
+```
+f. Import Data to Database
+
+1. Import house data to MongoDB (from csv)
+
+```
+py api/loader/csv_to_mongo.py --file data/temp_info.csv
+```
+
+2. Import house data to Elasticsearch (from csv)
+
+
+```
+py api/loader/csv_to_es.py --file data/temp_info.csv
+```
+
+g. Start RESTful API
+```
+python api/app.py
 ```
 
 ### Running Production (API)
@@ -108,6 +145,10 @@ metricbeat01 -e
 Build API Docker Image
 ```
 docker build . -t house-api-img --no-cache
+```
+
+Start WSGI in Container
+```
 docker run  --env-file .env --name house-api -d -p 5000:5000 house-api-img
 ```
 
@@ -150,7 +191,7 @@ aglio --theme-variables streak  -i api.apib --theme-template triple -o docs/api.
 make lint
 ```
 
-#### Check MongoFB
+#### Check MongoDB Data
 
 ```lan=shell
 docker exec -it mongodb bash
