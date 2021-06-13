@@ -1,3 +1,7 @@
+"""
+Module for /api/account method
+"""
+from typing import Dict, Tuple
 from datetime import datetime, timedelta
 import uuid
 
@@ -24,7 +28,12 @@ class AccountsOperator(Resource):
         add_auth_argument(self.post_parser)
 
     @authorization_validator("admin")
-    def post(self):
+    def post(self) -> Tuple[Dict[str, object], int]:
+        """the POST /api/account method
+
+        Returns:
+            Tuple[Dict[str, object], int]: (response body, http status)
+        """
         args = self.post_parser.parse_args()
         log_context("Request - Body", args)
 

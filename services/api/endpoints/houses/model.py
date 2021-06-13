@@ -1,3 +1,6 @@
+"""
+MongoDB Collection Model: House
+"""
 from api.db import db
 
 

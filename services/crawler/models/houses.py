@@ -1,3 +1,6 @@
+"""
+Module for 591 houses detailed data parsing
+"""
 import re
 from typing import Optional, Tuple
 
@@ -15,6 +18,15 @@ logger.add("house_parse.log", level="DEBUG")
 class PhoneOperator:
     @classmethod
     def get_phone_from_url(cls, url: str, html) -> Optional[str]:
+        """parse phone number with house page url
+
+        Args:
+            url (str): the url of a house page
+            html (object): the html object generate by request_html
+
+        Returns:
+            Optional[str]: the phone number str. e.g. 09********
+        """
 
         # Method 1. Read Phone Text
         phone = cls._get_phone_from_text(html)
@@ -43,6 +55,14 @@ class PhoneOperator:
 
     @classmethod
     def _get_phone_from_image(cls, html) -> Tuple[Optional[str], str]:
+        """use ocr package to recognize phone image
+
+        Args:
+            html (object): the html object generate by request_html
+
+        Returns:
+            Tuple[Optional[str], str]: phone number and method id (0 ~ 3)
+        """
         image_element = html.find(".num img", first=True)
         if not image_element:
             return None, "zero"
@@ -96,6 +116,16 @@ class PhoneOperator:
 
     @staticmethod
     def _validate_phone_str(phone: str) -> bool:
+        """check all the phone chars is number or contains other chars
+            e.g.
+                0911111111 -> True
+                O911111111 -> False
+        Args:
+            phone (str): the phone number
+
+        Returns:
+            bool: the phone number is valid or not
+        """
         try:
             return bool(int(phone))
         except ValueError as error:
@@ -104,6 +134,15 @@ class PhoneOperator:
 
     @classmethod
     def _get_phone_from_screenshot(cls, url: str) -> Optional[str]:
+        """actiavte webdriver, take screenshot,
+           use screenshot to recognize phone number (with high dpi)
+
+        Args:
+            url (str): the url of a house page
+
+        Returns:
+            Optional[str]: phone number
+        """
         # pick house_id from url string
         house_id = url[-13:-5]
         screen_file = f"./data/phone/full_{house_id}.png"
@@ -116,6 +155,15 @@ class PhoneOperator:
 
     @staticmethod
     def _save_screenshot(screen_file: str, url: str) -> Optional[str]:
+        """save screenshot to local dir for image recognizing
+
+        Args:
+            screen_file (str): the filename of screenshot
+            url (str): the url of house
+
+        Returns:
+            Optional[str]: the phone image is exist or not
+        """
         try:
             driver = get_driver()
             driver.set_window_size(1366, 768)
@@ -128,7 +176,16 @@ class PhoneOperator:
             return None
 
     @classmethod
-    def _recognize_phone_image(cls, screen_file: str, phone_img):
+    def _recognize_phone_image(cls, screen_file: str, phone_img) -> Optional[str]:
+        """recognize phone number by full screenshot
+
+        Args:
+            screen_file (str): the filepath of screenshot
+            phone_img (object): the img element generate by selenium
+
+        Returns:
+            Optional[str]: the phone number recognize with ocr package
+        """
 
         # calc phone position
         location = phone_img.location
@@ -182,6 +239,14 @@ class House:
 
     @staticmethod
     def _get_lessor_info(html) -> Tuple:
+        """[summary]
+
+        Args:
+            html ([type]): [description]
+
+        Returns:
+            Tuple: [description]
+        """
         lessor_gender: Optional[str] = None
         lessor_identity: Optional[str] = None
 
@@ -203,6 +268,14 @@ class House:
 
     @staticmethod
     def _get_house_type(html) -> Optional[str]:
+        """parse the "型態" value from house page
+
+        Args:
+            html (object): the html object generate by request_html
+
+        Returns:
+            Optional[str]: the "型態" field. e.g. "電梯大樓"
+        """
         elements = html.find(".attr li")
 
         house_type = None
@@ -217,6 +290,14 @@ class House:
 
     @staticmethod
     def _get_gender_requirement(html) -> Optional[str]:
+        """parse the "性別要求" value from house page
+
+        Args:
+            html ([type]): the html object generate by request_html
+
+        Returns:
+            Optional[str]: the "性別要求" value. e.g. "男女生皆可"
+        """
         elements = html.find("ul li.clearfix .one")
         labels = [element.text.replace("\n", "").strip() for element in elements]
         try:
@@ -228,6 +309,14 @@ class House:
 
     @staticmethod
     def _get_house_condition(html) -> Optional[str]:
+        """parse the "屋況說明" value from house page
+
+        Args:
+            html ([type]): the html object generate by request_html
+
+        Returns:
+            Optional[str]: the "屋況說明" value
+        """
         house_condition = html.find(".houseIntro", first=True)
         return house_condition.text if house_condition else None
 
@@ -253,6 +342,16 @@ class House:
 
 
 def parse_single_house(url, title, proxy=None) -> Optional[dict]:
+    """[summary]
+
+    Args:
+        url ([type]): the url of this house
+        title ([type]): the title of this house
+        proxy ([type], optional): the proxy IP. Defaults to None.
+
+    Returns:
+        Optional[dict]: the house detailed data
+    """
     session_arg = {"browser_args": [f"--proxy-server={proxy}"]} if proxy else {}
 
     res = HTMLSession(**session_arg).get(url)

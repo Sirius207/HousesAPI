@@ -1,3 +1,6 @@
+"""
+MongoDB Collection Model: Account
+"""
 from api.db import db
 
 

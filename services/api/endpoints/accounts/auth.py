@@ -1,3 +1,6 @@
+"""
+Module for Token Validation
+"""
 from datetime import datetime
 from typing import Callable
 
@@ -7,7 +10,7 @@ from werkzeug.exceptions import abort
 from api.endpoints.accounts.model import Account
 
 
-def _valid_token(token: str, user_role):
+def _valid_token(token: str, user_role: str):
 
     account = Account.objects(token=token).first()
     # 1. account exist
@@ -35,7 +38,7 @@ def _valid_token(token: str, user_role):
         abort(401, "No quota this month")
 
 
-def authorization_validator(user_role) -> Callable:
+def authorization_validator(user_role: str) -> Callable:
     def decorator(func) -> Callable:
         def wrapper(req_object) -> Callable:
             if func.__name__ == "get":

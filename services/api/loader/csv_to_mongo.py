@@ -13,6 +13,11 @@ from api.loader.load_csv import get_houses
 
 # pylint: disable= E1101
 def save_data_to_mongo(houses_data: List[dict]):
+    """use bulkwrite to import house data to mongoDB
+
+    Args:
+        houses_data (List[dict]): [{"house_id": "", "house_type: "", ...}, ...]
+    """
 
     connect(
         db=Config.MONGODB_SETTINGS["db"],

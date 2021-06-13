@@ -1,3 +1,6 @@
+"""
+Module for /api/house method
+"""
 import json
 from typing import Dict, Tuple
 
@@ -127,6 +130,11 @@ class HousesOperator(Resource):
     @elasticapm.capture_span()
     @authorization_validator("user")
     def get(self) -> Tuple[Dict[str, object], int]:
+        """the GET /api/houses method
+
+        Returns:
+            Tuple[Dict[str, object], int]: (response body, http status)
+        """
         args = self.get_parser.parse_args()
 
         query_conditions = self._query_conditions(args)
@@ -139,6 +147,11 @@ class HousesOperator(Resource):
     @elasticapm.capture_span()
     @authorization_validator("admin")
     def post(self) -> Tuple[Dict[str, object], int]:
+        """the POST /api/houses method
+
+        Returns:
+            Tuple[Dict[str, object], int]: (response body, http status)
+        """
         args = self.post_parser.parse_args()
         del args["Authorization"]
         log_context("Request - Body", args)

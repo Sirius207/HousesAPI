@@ -1,8 +1,20 @@
+"""
+Module for web driver activating
+"""
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 
 def get_driver(headless=True) -> webdriver.Chrome:
+    """activate a web driver (chrome)
+
+    Args:
+        headless (bool): use headless mode or not
+
+    Returns:
+        webdriver.Chrome: web driver
+    """
     chrome_options = Options()
     if headless:
         chrome_options.add_argument("--headless")

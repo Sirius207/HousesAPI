@@ -1,3 +1,7 @@
+"""
+Module for create default api user with token
+"""
+
 from datetime import datetime, timedelta
 
 from api.endpoints.accounts.model import Account
