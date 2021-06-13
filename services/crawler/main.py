@@ -45,7 +45,7 @@ def _export_house_data_to_csv(output_file: str, houses: dict):
 
 
 def main(args):
-    parse_houses_url(args.urls_file, city_id=args.city_id)
+    parse_houses_url(args.urls_file, city_id=args.city_id, page_limit=args.page_limit)
     basic_houses_info = _load_basic_houses_info(
         args.urls_file, args.url_start, args.url_end
     )
@@ -73,6 +73,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--city_id", dest="city_id", help="city_id for parsing", default=1
+    )
+    parser.add_argument(
+        "--page_limit", dest="page_limit", help="page_limit for parsing", default=3
     )
     parser.add_argument(
         "--url_start",
