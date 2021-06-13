@@ -12,7 +12,7 @@ def get_houses(filepath: str = "data/temp_info.csv") -> List[dict]:
     )
     house_df = house_df.drop(["url"], axis=1)
 
-    unique_df = house_df.drop_duplicates()
+    unique_df = house_df.drop_duplicates(subset=["house_id"])
     logger.info(f"Origin: {len(house_df)}, Drop Duplicates: {len(unique_df)}")
 
     unique_df = unique_df.fillna("")

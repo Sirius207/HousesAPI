@@ -17,5 +17,19 @@ class House(db.Document):
     gender_requirement = db.StringField(max_length=15, required=False)
     house_condition = db.StringField(required=True)
 
+    meta = {
+        "indexes": [
+            {
+                "fields": ["city", "lessor_identity"],
+            },
+            {
+                "fields": ["city", "gender_requirement"],
+            },
+            {
+                "fields": ["city", "lessor_gender"],
+            },
+        ]
+    }
+
 
 # pylint: enable= E1101

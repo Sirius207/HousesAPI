@@ -43,5 +43,5 @@ test:
 	pipenv run pytest -vv
 
 coverage:
-	pipenv run pytest --cov-report term-missing --cov-report xml --cov=$(PKG) water_detection/tests
+	pipenv run pytest --cov-report term-missing --cov-report xml --cov=$(PKG)
 

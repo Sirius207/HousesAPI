@@ -8,9 +8,11 @@ import os
 import sys
 
 from dotenv import load_dotenv
+from elasticapm.contrib.flask import ElasticAPM
 from flask import Flask
 from flask_restful import Api
 from werkzeug.exceptions import HTTPException, default_exceptions
+
 
 from config import APP_CONFIG
 from db import db
@@ -48,6 +50,8 @@ def create_app(config_mode):
     app.config.from_object(APP_CONFIG[config_mode])
 
     db.init_app(app)
+    ElasticAPM(app, logging=True)
+
     # Route Init
     api = Api(app)
     for route in RESOURCES:

@@ -86,12 +86,13 @@ class HousePageOperator:
             logger.info(f"Write Success {new_page}")
             self.write_page.add(new_page)
 
-    def save_all_house_url(self, city_id: int = 3, page_limit: int = 3):
-        url = "https://rent.591.com.tw/?kind=0&region=1"
+    def save_all_house_url(self, output_file, city_id: int = 1, page_limit: int = 3):
+        # city_id: 3-新北, 1-台北
+        url = "https://rent.591.com.tw/?kind=0&region=1&order=posttime&orderType=asc"
         self.driver.get(url)
         self.choose_city(city_id)
 
-        with open("data/urls.csv", "a", newline="", encoding="utf-8") as csvfile:
+        with open(output_file, "a", newline="", encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
 
             is_next_page = True
@@ -109,10 +110,16 @@ class HousePageOperator:
                 is_next_page = self.click_next_page(new_page)
 
 
-if __name__ == "__main__":
+def parse_houses_url(output_file, city_id=1):
     try:
         house_parser = HousePageOperator()
-        house_parser.save_all_house_url()
+        house_parser.save_all_house_url(
+            output_file=output_file, city_id=city_id, page_limit=3
+        )
     finally:
         logger.success("Quit Driver")
         house_parser.driver.quit()
+
+
+if __name__ == "__main__":
+    parse_houses_url("data/urls.csv")

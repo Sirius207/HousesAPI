@@ -1,0 +1,429 @@
+FORMAT: 1A
+HOST: https://localhost:5000/v1/api
+
+# Houses API Documentation
+
+HouseAPI is an API service allowing analyst to query 591 houses data.
+
+# Allowed HTTPs requests:
+<pre>
+POST    : Update resource
+GET     : Get a resource or list of resources
+</pre>
+
+# Description Of Usual Server Responses:
+- 200 `OK` - the request was successful (some API calls may return 201 instead).
+- 201 `Created` - the request was successful and a resource was created.
+- 204 `No Content` - the request was successful but there is no representation to return (i.e. the response is empty).
+- 400 `Bad Request` - the request could not be understood or was missing required parameters.
+- 401 `Unauthorized` - authentication failed or user doesn't have permissions for requested operation.
+- 403 `Forbidden` - access denied.
+- 404 `Not Found` - resource was not found.
+
+# Group Houses
+Represents House Details
+
+---
+**House attributes:**
+
+- _id `(String))` : unique identifier, the house_id in url
+- title `(String(20))` : e.g. 吉屋
+- city `(String(6))` : e.g. 桃園市
+- district `(String(6))` : e.g. 中和區
+- lessor `(String(10))` : e.g. 王先生
+- lessor_gender `(String(2))` :  optional. e.g. 男
+- lessor_identity `(String(10))` : e.g. 代理人
+- house_type `(String(10))` :  optional. e.g. 公寓
+- house_status `(String(20))` : e.g. 雅房
+- sold `(String(15))` :  optional. e.g. 3天成交
+- phone `(String(20))` :  optional. e.g. 09xxxxxxxx
+- gender_requirement `(String(15))` :  optional. e.g. 男女生皆可
+- house_condition `(String)` : Hash identifier. e.g. 正常
+
+---
+## House Collection [/houses]
+### List all houses [GET]
+
++ Request (application/json)
+
+    success
+
+    + Headers
+
+            Authorization: 2bb431e67cc9481dafb6af689e35ddb9
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "message": "not found",
+                "len": 1,
+                "data": [
+                    {
+                        "_id": "10362106",
+                        "title": "天母SOGO套房",
+                        "city": "台北市",
+                        "district": "士林區",
+                        "lessor": "許小姐",
+                        "lessor_gender": "女",
+                        "lessor_identity": "代理人",
+                        "house_type": "公寓",
+                        "house_status": "獨立套房",
+                        "sold": "",
+                        "phone": "09********",
+                        "gender_requirement": "男女生皆可",
+                        "house_condition": "乾淨明亮精緻套房"
+                    },
+                ]
+            }
+
+
++ Response 404 (application/json)
+
+
+    + Body
+
+            {
+                "message": "not found",
+                "len": 0,
+                "data": []
+            }
+
++ Request (application/json)
+
+    without token
+
+    + Headers
+
++ Response 400 (application/json)
+
+        {
+            "message": {
+                "Authorization": "Missing required parameter in the HTTP headers"
+            }
+        }
+
+
++ Request (application/json)
+
+    wrong token
+
+    + Headers
+
+            Authorization: wrongtoken
+
+
++ Response 401 (application/json)
+
+        {
+            "message": "Invalid token"
+        }
+
+
+### Create a House [POST]
+
+
++ Request (application/json)
+
+    success
+
+    + Headers
+
+            Authorization: 2bb431e67cc9481dafb6af689e35ddb9
+
+    + Body
+
+            {
+                "house_id": "11111117",
+                "title": "吉屋",
+                "city": "桃園市",
+                "district": "中和區",
+                "lessor": "王先生",
+                "lessor_identity": "代理人",
+                "house_type": "公寓",
+                "house_status": "雅房",
+                "sold": None,
+                "phone": "09xxxxxxxx",
+                "gender_requirement": "男女生皆可",
+                "house_condition": "正常",
+            }
+
++ Response 201 (application/json)
+
+    + Headers
+
+            Location: /houses/11111117
+
+    + Body
+
+            {
+                "data": null
+            }
+
++ Request (application/json)
+
+    without token
+
+    + Headers
+
++ Response 400 (application/json)
+
+        {
+            "message": {
+                "Authorization": "Missing required parameter in the HTTP headers"
+            }
+        }
+
+
++ Request (application/json)
+
+    wrong token
+
+    + Headers
+
+            Authorization: wrongtoken
+
+
++ Response 401 (application/json)
+
+        {
+            "message": "Invalid token"
+        }
+
+## Houses Collection [/houses/{?renter_gender,city,district,house_type,house_status,phone,lessor_identity,lessor_gender,lessor_lastname,explain}]
+House objects with all their details
+
+
++ Parameters
+    + renter_gender: `男` (optional, String) - Set to `男` to retrieve data with gender requirement equal to "男生" or "男女生皆可"
+        + Members
+            + `男`
+            + `女`
+    + city: `新北市` (optional, String) - use `?city=新北市` <=  Return data Group which city = `新北市`
+        + Members
+            + `台北市`
+            + `新北市`
+    + district: `三重區` (optional, String) - user `?district=三重區` <= Return data Group which district = "三重區"
+    + house_type: `公寓` (optional, String) -  Set to `公寓` to retrieve house type equal to `公寓`
+    + house_status: `分租套房` (optional, String) - Set to `分租套房` to retrieve house status equal to `公寓`
+    + phone: `09********` (optional, String) - use '?phone=hour' <=  Return data Group which phone = "09********"
+    + lessor_identity: `屋主` (optional, String) - Set to `屋主` to retrieve lessor identity equal to `屋主`
+        + Members
+            + `屋主`
+            + `代理人`
+            + `非屋主`
+            + `仲介`
+    + lessor_gender: `男` (optional, String) - Set to `男` to retrieve lessor gender equal to `男`
+        + Members
+            + `男`
+            + `女`
+    + lessor_lastname: `吳` (optional, String) - retrieve
+    + explain: `on` (optional, String) - use '?explain=on' <=  Return the query plan and execution detail
+        + Members
+            + `on`
+
+
+### Retrieve Houses with conditions [GET]
+
++ Response 200 (application/json)
+
+    use /houses?city=新北市&district=三重區&lessor_identity=非屋主&lessor_gender=男 will return
+
+    + Headers
+
+            Authorization: 2bb431e67cc9481dafb6af689e35ddb9
+
+    + Body
+
+
+            {
+                "message": "success",
+                "len": 1,
+                "data": [
+                    {
+                        "_id": "10784563",
+                        "title": "永福街全新精美套房",
+                        "city": "新北市",
+                        "district": "三重區",
+                        "lessor": "郭先生",
+                        "lessor_gender": "男",
+                        "lessor_identity": "代理人",
+                        "house_type": "公寓",
+                        "house_status": "獨立套房",
+                        "sold": "",
+                        "phone": "09********",
+                        "gender_requirement": "男女生皆可",
+                        "house_condition": "✅租金包水費、網路，第四台，電5元"
+                    },
+                ]
+            }
+
+
++ Response 404 (application/json)
+
+    use /houses?city=台北市&district=三重區 will return
+
+    + Body
+
+            {
+                "message": "not found",
+                "len": 0,
+                "data": []
+            }
+
+
+
+# Group Accounts
+Represents Accounts Details
+
+---
+**Account attributes:**
+
+- username `(Number(10))` : Require, unique identifier.
+- user_role `(String(5))` : Require. "admin" or "user"
+- token `(String(32))` : Require. api users sould attach token in header when calling api
+- month_api_limit `(Number)` : Require. the maximum API calling limit in one month
+- api_quota `(Number)` : Require. the remain api calling quota of this month
+- key_expire_at `(Date)` : Require. the expiry date of token
+
+---
+## Account Collection [/accounts]
+
+### Create a Account [POST]
+
+
++ Request (application/json)
+
+    new username
+
+    + Headers
+
+            Authorization: 2bb431e67cc9481dafb6af689e35ddb9
+
+    + Body
+
+            {
+                "username": "api-admin",
+                "user_role": "admin",
+            }
+
++ Response 201 (application/json)
+
+    + Body
+
+            {
+                "message": "success",
+                "data": {
+                    "username": "api-admin",
+                    "user_role": "admin",
+                    "token": "60cb6dd5b71d4e13a2270ba384fb779f",
+                    "month_api_limit": 5000,
+                    "api_quota": 5000,
+                    "key_expire_at": "2022-06-07T15:42:44"
+                }
+            }
+
+
++ Request (application/json)
+
+    username is already taken
+
+    + Headers
+
+            Authorization: 2bb431e67cc9481dafb6af689e35ddb9
+
+    + Body
+
+            {
+                "username": "api-admin",
+                "user_role": "admin",
+            }
+
++ Response 400 (application/json)
+
+
+    + Body
+
+            {
+                "message": "username exists"
+            }
+
++ Request (application/json)
+
+    no user_role
+
+    + Headers
+
+            Authorization: 2bb431e67cc9481dafb6af689e35ddb9
+
+    + Body
+
+            {
+                "username": "api-admin"
+            }
+
++ Response 400 (application/json)
+
+
+    + Body
+
+            {
+                "message": {
+                    "user_role": "need to add user_role to storage"
+                }
+            }
+
++ Request (application/json)
+
+    wrong user_role
+
+    + Headers
+
+            Authorization: 2bb431e67cc9481dafb6af689e35ddb9
+
+    + Body
+
+            {
+                "username": "api-admin",
+                "user_role": "super",
+            }
+
++ Response 400 (application/json)
+
+
+    + Body
+
+            {
+                "message": "invalid user_role"
+            }
+
++ Request (application/json)
+
+    without token
+
+    + Headers
+
++ Response 400 (application/json)
+
+        {
+            "message": {
+                "Authorization": "Missing required parameter in the HTTP headers"
+            }
+        }
+
+
++ Request (application/json)
+
+    wrong token
+
+    + Headers
+
+            Authorization: wrongtoken
+
+
++ Response 401 (application/json)
+
+        {
+            "message": "Invalid token"
+        }

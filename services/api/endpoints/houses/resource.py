@@ -1,9 +1,12 @@
 import json
+from typing import Dict, Tuple
 
+import elasticapm
 from flask_restful import Resource, reqparse
 
 from api.endpoints.houses.model import House
-from api.endpoints.utils import add_common_arguments, log_context
+from api.endpoints.utils import add_common_arguments, add_auth_argument, log_context
+from api.endpoints.accounts.auth import authorization_validator
 
 
 class HousesOperator(Resource):
@@ -27,8 +30,11 @@ class HousesOperator(Resource):
                 ("lessor_identity", False),
                 ("lessor_gender", False),
                 ("lessor_lastname", False),
+                ("explain", False),
             ),
         )
+
+        add_auth_argument(self.get_parser)
 
     @staticmethod
     def _get_fields(document_object):
@@ -57,6 +63,8 @@ class HousesOperator(Resource):
                 ("house_condition", True),
             ),
         )
+
+        add_auth_argument(self.post_parser)
 
     @staticmethod
     def _query_conditions(args) -> dict:
@@ -93,9 +101,7 @@ class HousesOperator(Resource):
 
         return query_conditions
 
-    def get(self):
-        args = self.get_parser.parse_args()
-        query_conditions = self._query_conditions(args)
+    def _get_data(self, query_conditions: dict) -> Tuple[Dict[str, object], int]:
         # pylint: disable= E1101
         houses = House.objects(**query_conditions)
         # pylint: enable= E1101
@@ -111,8 +117,30 @@ class HousesOperator(Resource):
             200,
         )
 
-    def post(self):
+    @staticmethod
+    def _get_explain(query_conditions: dict) -> Tuple[Dict[str, object], int]:
+        # pylint: disable= E1101
+        explain = House.objects(**query_conditions).explain()
+        # pylint: enable= E1101
+        return ({"message": "success", "explain": explain}, 200)
+
+    @elasticapm.capture_span()
+    @authorization_validator("user")
+    def get(self) -> Tuple[Dict[str, object], int]:
+        args = self.get_parser.parse_args()
+
+        query_conditions = self._query_conditions(args)
+
+        if args["explain"] == "on":
+            return self._get_explain(query_conditions)
+
+        return self._get_data(query_conditions)
+
+    @elasticapm.capture_span()
+    @authorization_validator("admin")
+    def post(self) -> Tuple[Dict[str, object], int]:
         args = self.post_parser.parse_args()
+        del args["Authorization"]
         log_context("Request - Body", args)
         House(**args).save()
-        return ({"data": None}, 200)
+        return ({"data": None}, 201)
