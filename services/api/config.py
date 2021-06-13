@@ -69,6 +69,7 @@ class ProductionConfig(Config):
 
     DEBUG = False
     TESTING = False
+    Config.ELASTIC_APM["DEBUG"] = False
 
 
 APP_CONFIG = {

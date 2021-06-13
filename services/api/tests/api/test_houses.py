@@ -1,8 +1,8 @@
 import json
-import pytest
 
-from tests import CLIENT
+import pytest
 from api.config import Config
+from tests import CLIENT
 
 VALID_HOUSE_HEADERS = {
     "Content-type": "application/json",

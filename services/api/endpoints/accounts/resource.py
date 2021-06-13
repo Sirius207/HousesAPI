@@ -1,12 +1,16 @@
-from datetime import datetime, timedelta
+"""
+Module for /api/account method
+"""
 import uuid
+from datetime import datetime, timedelta
+from typing import Dict, Tuple
 
 from flask_restful import Resource, reqparse
 from werkzeug.exceptions import abort
 
-from api.endpoints.accounts.model import Account
 from api.endpoints.accounts.auth import authorization_validator
-from api.endpoints.utils import add_common_arguments, add_auth_argument, log_context
+from api.endpoints.accounts.model import Account
+from api.endpoints.utils import add_auth_argument, add_common_arguments, log_context
 
 
 class AccountsOperator(Resource):
@@ -24,7 +28,12 @@ class AccountsOperator(Resource):
         add_auth_argument(self.post_parser)
 
     @authorization_validator("admin")
-    def post(self):
+    def post(self) -> Tuple[Dict[str, object], int]:
+        """the POST /api/account method
+
+        Returns:
+            Tuple[Dict[str, object], int]: (response body, http status)
+        """
         args = self.post_parser.parse_args()
         log_context("Request - Body", args)
 

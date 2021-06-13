@@ -22,7 +22,15 @@ def _load_basic_houses_info(
     return basic_house_df.iloc[start:end].values.tolist()
 
 
-def _parallel_parse_house_data(basic_houses_info) -> List[dict]:
+def _parallel_parse_house_data(basic_houses_info: List[List[str]]) -> List[dict]:
+    """parse house data from all the urls with multiprocess mode (loki)
+
+    Args:
+        basic_houses_info (List[List[str]]): [("https://..", "house title"), ...]
+
+    Returns:
+        List[dict]: [{"url": "", "house_type": "",...}, ...]
+    """
     houses = Parallel(n_jobs=-1)(
         delayed(parse_single_house)(house_info[0], house_info[1])
         for house_info in basic_houses_info

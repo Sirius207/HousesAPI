@@ -1,15 +1,14 @@
 import json
 import os
-from typing import List
 from argparse import ArgumentParser
-from ssl import create_default_context, CERT_REQUIRED
+from ssl import CERT_REQUIRED, create_default_context
+from typing import List
 
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch, helpers
 from loguru import logger
 
 from api.loader.load_csv import get_houses
-
 
 load_dotenv()
 
