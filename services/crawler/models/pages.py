@@ -1,7 +1,9 @@
 import csv
+from collections import defaultdict
 import time
-from typing import Any, Generator, Set, Tuple
+from typing import Any, List, Tuple
 
+import pandas as pd
 from bs4 import BeautifulSoup
 from loguru import logger
 from selenium import webdriver
@@ -17,7 +19,7 @@ WAITING_TIME = 15
 class HousePageOperator:
     def __init__(self, headless: bool = True):
         self.driver = self.get_driver(headless)
-        self.write_page: Set[str] = set()
+        self.write_page: dict = defaultdict(int)
 
     @staticmethod
     def get_driver(headless: bool) -> webdriver.Chrome:
@@ -40,15 +42,23 @@ class HousePageOperator:
         if city_btn.is_displayed():
             city_btn.click()
 
-    def parse_house_url(self) -> Generator[Tuple[str, Any], None, None]:
+    def parse_house_url(self) -> List[Tuple[str, Any]]:
         content = self.driver.page_source
         soup = BeautifulSoup(content, "html.parser")
         urls = soup.select(".listLeft .infoContent h3 a")
         logger.info(f"Houses: {len(urls)}")
-        return ((f"https:{url.get('href').strip()}", url.text.strip()) for url in urls)
+        return [(f"https:{url.get('href').strip()}", url.text.strip()) for url in urls]
+
+    def click_prev_page(self):
+        prev_btn = WebDriverWait(self.driver, WAITING_TIME).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "pagePrev"))
+        )
+
+        prev_btn.click()
 
     def click_next_page(self, current_page: int) -> bool:
         try:
+            logger.info(f"Page: {current_page} -> click next page")
             next_btn = WebDriverWait(self.driver, WAITING_TIME).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "pageNext"))
             )
@@ -81,10 +91,10 @@ class HousePageOperator:
 
     def save_house_basic_info(self, writer, urls, new_page):
 
-        if new_page not in self.write_page:
+        if new_page not in self.write_page or self.write_page[new_page] < 2:
             writer.writerows(urls)
-            logger.info(f"Write Success {new_page}")
-            self.write_page.add(new_page)
+            logger.success(f"Write Success {new_page}")
+            self.write_page[new_page] += 1
 
     def save_all_house_url(self, output_file, city_id: int = 1, page_limit: int = 3):
         # city_id: 3-新北, 1-台北
@@ -98,27 +108,62 @@ class HousePageOperator:
             is_next_page = True
             new_page = 1
             last_page = 0
+            last_tail_title = ""
+            click_prev_page = False
             while is_next_page and new_page <= page_limit:
                 time.sleep(1)
                 new_page = self.get_current_page()
                 if last_page != new_page:
                     urls = self.parse_house_url()
-                    self.save_house_basic_info(writer, urls, new_page)
-                    last_page = new_page
+                    logger.info(f"Page Head:\n {urls[0][1]}")
+                    logger.info(f"Page Tail:\n {urls[-1][1]}")
+                    if (
+                        urls[0][1] == last_tail_title
+                        and self.write_page[new_page - 1] < 2
+                    ):
+                        # back to the page before prev
+                        logger.warning(f"The Same House: {new_page}")
+                        click_prev_page = True
+                        self.click_prev_page()
+                        time.sleep(1)
+                        self.click_prev_page()
+                        last_page = last_page - 2
+                    else:
+                        last_tail_title = urls[-1][1]
+                        self.save_house_basic_info(writer, urls, new_page)
+                        last_page = new_page
+                elif last_page == new_page - 2:
+                    logger.warning(f"Last Page: {last_page}, Current Page: {new_page}")
+                    click_prev_page = True
+                    self.click_prev_page()
                 else:
-                    logger.warning("the same page")
-                is_next_page = self.click_next_page(new_page)
+                    logger.warning("The same page")
+
+                if click_prev_page:
+                    click_prev_page = False
+                else:
+                    is_next_page = self.click_next_page(new_page)
 
 
-def parse_houses_url(output_file, city_id=1):
+def parse_houses_url(output_file, city_id=3, page_limit=3):
     try:
         house_parser = HousePageOperator()
         house_parser.save_all_house_url(
-            output_file=output_file, city_id=city_id, page_limit=3
+            output_file=output_file, city_id=city_id, page_limit=page_limit
         )
+        _remove_duplicate_houses(output_file)
+
     finally:
         logger.success("Quit Driver")
         house_parser.driver.quit()
+
+
+def _remove_duplicate_houses(filepath):
+    house_df = pd.read_csv(filepath)
+    unique_df = house_df.drop_duplicates()
+    logger.info(f"Origin: {len(house_df)}, Drop Duplicates: {len(unique_df)}")
+
+    unique_df.to_csv("data/urls_unique.csv", index=None)
 
 
 if __name__ == "__main__":

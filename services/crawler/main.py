@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from typing import List
 
 import pandas as pd
@@ -35,18 +36,45 @@ def _export_house_data_to_csv(output_file: str, houses: dict):
     full_house_df.to_csv(output_file, index=None)
 
 
-def main():
-    local_url_file = "data/urls.csv"
-    parse_houses_url(local_url_file, city_id=1)
-    basic_houses_info = _load_basic_houses_info(local_url_file, 0, 250)
+def main(args):
+    parse_houses_url(args.urls_file, city_id=args.city_id)
+    basic_houses_info = _load_basic_houses_info(
+        args.urls_file, args.url_start, args.url_end
+    )
     houses = _parallel_parse_house_data(basic_houses_info)
 
     logger.info(f"Parse {len(houses)} Houses")
     logger.info(f"Sample: {houses[0]}")
 
-    output_file = "./data/temp_info.csv"
-    _export_house_data_to_csv(output_file, houses)
+    _export_house_data_to_csv(args.data_file, houses)
 
 
 if __name__ == "__main__":
-    main()
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--urls_file",
+        dest="urls_file",
+        help="file for urls storage",
+        default="data/urls.csv",
+    )
+    parser.add_argument(
+        "--data_file",
+        dest="data_file",
+        help="file for house data storage",
+        default="data/temp_info.csv",
+    )
+    parser.add_argument(
+        "--city_id", dest="city_id", help="city_id for parsing", default=1
+    )
+    parser.add_argument(
+        "--url_start",
+        dest="url_start",
+        help="the start index for house parsing",
+        default=0,
+    )
+    parser.add_argument(
+        "--url_end", dest="url_end", help="the end index for house parsing", default=250
+    )
+    cli_args = parser.parse_args()
+
+    main(cli_args)
