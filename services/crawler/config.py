@@ -13,6 +13,6 @@ class Config:
     url_start = int(os.environ.get("URL_START", 0))
     url_end = int(os.environ.get("URL_END", 250))
     executed_time = os.environ.get("EXECUTED_TIME", "02:13")
-    use_docker = bool(int(os.environ.get("USE_DOCKER", 1)))
+    use_docker = bool(int(os.environ.get("USE_DOCKER", 0)))
 
     chrome_host = os.environ.get("CHROME_HOST", "localhost")
