@@ -75,6 +75,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--url_end", dest="url_end", help="the end index for house parsing", default=250
     )
-    args = parser.parse_args()
+    cli_args = parser.parse_args()
 
-    main(args)
+    main(cli_args)
