@@ -1,10 +1,9 @@
-from typing import List
 from argparse import ArgumentParser
+from typing import List
 
 from loguru import logger
 from mongoengine import connect
 from mongoengine.errors import BulkWriteError
-
 
 from api.config import Config
 from api.endpoints.houses.model import House

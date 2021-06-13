@@ -7,9 +7,9 @@ from typing import Dict, Tuple
 import elasticapm
 from flask_restful import Resource, reqparse
 
-from api.endpoints.houses.model import House
-from api.endpoints.utils import add_common_arguments, add_auth_argument, log_context
 from api.endpoints.accounts.auth import authorization_validator
+from api.endpoints.houses.model import House
+from api.endpoints.utils import add_auth_argument, add_common_arguments, log_context
 
 
 class HousesOperator(Resource):

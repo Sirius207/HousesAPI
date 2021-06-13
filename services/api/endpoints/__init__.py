@@ -3,10 +3,9 @@ Organize all API entrypoints
 Author: Po-Chun, Lu
 
 """
-from api.endpoints.houses.resource import HousesOperator
-from api.endpoints.accounts.resource import AccountsOperator
 from api.config import Config
-
+from api.endpoints.accounts.resource import AccountsOperator
+from api.endpoints.houses.resource import HousesOperator
 
 RESOURCES = {
     f"{Config.API_PREFIX}/houses": HousesOperator,

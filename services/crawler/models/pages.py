@@ -2,8 +2,8 @@
 Module for 591 houses urls parsing
 """
 import csv
-from collections import defaultdict
 import time
+from collections import defaultdict
 from typing import Any, List, Tuple
 
 import pandas as pd
