@@ -102,15 +102,24 @@ class ESOperator:
         helpers.bulk(self.es_conn, remove_data)
 
 
+def save_data_to_es(filename: str):
+    """
+
+    Args:
+        filename (str): the filename of house data
+    """
+    es = ESOperator(ESConfig)
+    es.create_index(ESConfig.index)
+
+    houses = get_houses(filename)
+    es.load_data(houses)
+
+    logger.success(f"success create {len(houses)} documents")
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-f", "--file", dest="filename", help="source file")
     args = parser.parse_args()
 
-    es = ESOperator(ESConfig)
-    es.create_index(ESConfig.index)
-
-    houses = get_houses(args.filename)
-    es.load_data(houses)
-    # es.bulk_save(houses)
-    logger.success(f"success create {len(houses)} documents")
+    save_data_to_es(args.filename)

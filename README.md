@@ -143,14 +143,28 @@ python api/app.py
 
 ### Running Production (API)
 
+#### API
+
 Build API Docker Image
 ```
-docker build . -t house-api-img --no-cache
+docker build . -f Dockerfile.crawler -t house-api-img --no-cache
 ```
 
 Start WSGI in Container
 ```
 docker run  --env-file .env --name house-api -d -p 5000:5000 house-api-img
+```
+
+#### Crawler
+
+Build Crawler Docker Image
+```
+docker build . -f Dockerfile.crawler -t house-crawler-img --no-cache
+```
+
+Start Crawler in Container
+```
+docker run  --env-file .env --name house-crawler  house-crawler-img
 ```
 
 ### Running the tests
