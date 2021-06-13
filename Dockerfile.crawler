@@ -1,0 +1,20 @@
+FROM python:3.9.0-slim
+
+
+RUN pip install pipenv==2018.11.26
+
+# Install dependencies
+COPY Pipfile Pipfile
+COPY Pipfile.lock Pipfile.lock
+
+RUN pipenv install --deploy --system
+
+COPY ./services/api/ /api/
+COPY ./services/crawler/ /crawler/
+COPY ./services/data/ /data/
+WORKDIR /
+
+ENV PYTHONPATH "${PYTHONPATH}:/crawler"
+ENV PYTHONPATH "${PYTHONPATH}:/api"
+
+CMD ["python", "./crawler/routine.py"]
