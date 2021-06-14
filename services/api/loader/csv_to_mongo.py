@@ -37,8 +37,9 @@ def save_data_to_mongo(filename: str):
         for house in houses
     ]
 
+    # pylint: disable= W0212
     House._get_collection().bulk_write(bulk_operations, ordered=False)
-
+    # pylint: enable= W0212
     logger.success("Save data to MongoDB Successfully")
 
 

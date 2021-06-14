@@ -110,11 +110,11 @@ def save_data_to_es(filename: str):
     Args:
         filename (str): the filename of house data
     """
-    es = ESOperator(ESConfig)
-    es.create_index(ESConfig.index)
+    es_conn = ESOperator(ESConfig)
+    es_conn.create_index(ESConfig.index)
 
     houses = get_houses(filename)
-    es.load_data(houses)
+    es_conn.load_data(houses)
 
     logger.success(f"success create {len(houses)} documents")
 
