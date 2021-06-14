@@ -1,0 +1,106 @@
+version: '3.5'
+
+services:
+  selenium-hub:
+    image: selenium/hub:3.12.0-boron
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"
+    networks:
+      - crawler
+
+  chrome:
+    image: selenium/node-chrome:3.12.0-boron
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+    networks:
+      - crawler
+
+  crawler_taipei:
+    build:
+      context: ./
+      dockerfile: Dockerfile.crawler
+    container_name: crawler_taipei
+    env_file:
+      - ./.env
+    environment:
+      - CITY_ID=1                 # the order of element in 591 website for selenium working
+      - CHROME_HOST=selenium-hub
+      - USE_DOCKER=1              # whether use docker selenium or not
+      - MONGO_HOST=elastic_gateway
+      - ES_HOST=elastic_gateway
+      - ES_PORT=9300
+      - ES_CERT_PATH=data/elastic_gateway.crt
+    volumes:
+      - ./services/data:/data
+    networks:
+      - crawler
+
+    depends_on: [selenium-hub, chrome]
+
+  crawler_new_taipei:
+    build:
+      context: ./
+      dockerfile: Dockerfile.crawler
+    container_name: crawler_new_taipei
+    env_file:
+      - ./.env
+    environment:
+      - CITY_ID=3                 # the order of element in 591 website for selenium working
+      - CHROME_HOST=selenium-hub
+      - USE_DOCKER=1              # whether use docker selenium or not
+      - MONGO_HOST=elastic_gateway
+      - ES_HOST=elastic_gateway
+      - ES_PORT=9300
+      - ES_CERT_PATH=data/elastic_gateway.crt
+    volumes:
+      - ./services/data:/data
+    networks:
+      - crawler
+
+    depends_on: [selenium-hub, chrome]
+
+  elastic_gateway:
+    image: nginx
+    container_name: elastic_gateway
+    networks:
+      - api
+      - crawler
+      - es_elastic
+    volumes:
+      - ./docker-manifests/subconfigs/nginx-elastic-http.conf:/etc/nginx/conf.d/elastic_http.conf
+      - ./docker-manifests/subconfigs/nginx-elastic.conf:/etc/nginx/conf.d/elastic_stream.conf
+      - ./docker-manifests/subconfigs/nginx.conf:/etc/nginx/nginx.conf
+      - ./services/data/ca.crt:/etc/nginx/certs/ca.crt
+      - ./services/data/elastic_gateway.crt:/etc/nginx/certs/elastic_gateway.crt
+      - ./services/data/elastic_gateway.key:/etc/nginx/certs/elastic_gateway.key
+
+    depends_on: [selenium-hub, chrome]
+
+
+  house_api:
+    build:
+      context: ./
+      dockerfile: Dockerfile.api
+    container_name: house_api
+    ports:
+      - 5000:5000
+    env_file:
+      - ./.env
+    environment:
+      - MONGO_HOST=elastic_gateway
+      - APM_URL=http://elastic_gateway:8300
+    networks:
+      - api
+    depends_on: [elastic_gateway]
+
+networks:
+  api:
+    driver: bridge
+  crawler:
+    driver: bridge
+  es_elastic:
+    external: true

@@ -19,12 +19,14 @@ class ESConfig:
     index = os.environ.get("ES_INDEX", "houses-data")
     username = os.environ.get("ES_USER")
     password = os.environ.get("ES_PASSWORD")
+    ca_path = os.environ.get("ES_CA_PATH", "data/ca.crt")
+    cert_path = os.environ.get("ES_CERT_PATH", "data/es01.crt")
 
 
 class ESOperator:
     def __init__(self, Config):
-        context = create_default_context(cafile="data/es01.crt")
-        context.load_verify_locations(cafile="data/ca.crt")
+        context = create_default_context(cafile=Config.cert_path)
+        context.load_verify_locations(cafile=Config.ca_path)
         context.verify_mode = CERT_REQUIRED
         self.es_conn = Elasticsearch(
             hosts=[Config.host],
@@ -102,15 +104,24 @@ class ESOperator:
         helpers.bulk(self.es_conn, remove_data)
 
 
+def save_data_to_es(filename: str):
+    """
+
+    Args:
+        filename (str): the filename of house data
+    """
+    es_conn = ESOperator(ESConfig)
+    es_conn.create_index(ESConfig.index)
+
+    houses = get_houses(filename)
+    es_conn.load_data(houses)
+
+    logger.success(f"success create {len(houses)} documents")
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-f", "--file", dest="filename", help="source file")
     args = parser.parse_args()
 
-    es = ESOperator(ESConfig)
-    es.create_index(ESConfig.index)
-
-    houses = get_houses(args.filename)
-    es.load_data(houses)
-    # es.bulk_save(houses)
-    logger.success(f"success create {len(houses)} documents")
+    save_data_to_es(args.filename)

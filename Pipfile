@@ -37,6 +37,7 @@ wheel = "==0.36.2"
 elasticsearch = "==7.13.1"
 elastic-apm = {extras = ["flask"], version = "==6.2.2"}
 psutil = "==5.8.0"
+schedule = "==0.6.0"
 
 [requires]
 python_version = "3.9"

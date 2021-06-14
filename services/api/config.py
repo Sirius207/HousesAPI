@@ -36,7 +36,7 @@ class Config:
 
     ELASTIC_APM = {
         "SERVICE_NAME": "house-api",
-        "SERVER_URL": "http://localhost:8200",
+        "SERVER_URL": os.environ.get("APM_URL", "http://localhost:8200"),
         "DEBUG": True,
         "SECRET_TOKEN": os.environ.get("APM_TOKEN"),
         "TRACES_SEND_FREQ": 5,

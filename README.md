@@ -11,13 +11,14 @@ A RESTful API for [591 website](https://rent.591.com.tw/?kind=0&region=3&order=p
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=flat-square)](https://conventionalcommits.org)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?style=flat-square&logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
+![](https://i.imgur.com/SwL24Bw.png)
 ## Features
 
 - [x] [591 housing data](https://rent.591.com.tw/?kind=0&order=posttime&orderType=asc&region=3) Crawler
 - [x] RESTful API with MongoDB for house data querying and creating
 - [x] RESTful API with Token Authorization
 - [x] API Doc built with Aglio
-- [x] ElasticSearch Storage
+- [x] Elasticsearch Cluster Storage
 - [x] House Data with Kibana Display
 - [x] Filebeat Log Dashboard for MongoDB
 - [x] APM Dashboard for API application
@@ -52,11 +53,11 @@ cd docker-manifests
 docker-compose -f docker-mongo.yml up -d
 ```
 
-c. Activate ElasticSearch, Kibana
+c. Activate Elasticsearch, Kibana
 
 1. add .env to environment/
 
-2. setup [elasticSearch Account](https://www.elastic.co/guide/en/elastic-stack-get-started/7.13/get-started-docker.html#get-started-docker-tls) at first usage
+2. setup [elasticsearch Account](https://www.elastic.co/guide/en/elastic-stack-get-started/7.13/get-started-docker.html#get-started-docker-tls) at first usage
 
 ```
 cd docker-manifests
@@ -141,16 +142,36 @@ g. Start RESTful API
 python api/app.py
 ```
 
-### Running Production (API)
+### Running Production
+
+#### Run Crawler, API, Nginx Proxy
+
+```
+docker-compose -f docker-house.yml up -d
+```
+
+#### Just Run API
 
 Build API Docker Image
 ```
-docker build . -t house-api-img --no-cache
+docker build . -f Dockerfile.crawler -t house-api-img --no-cache
 ```
 
 Start WSGI in Container
 ```
 docker run  --env-file .env --name house-api -d -p 5000:5000 house-api-img
+```
+
+#### Just Run Crawler
+
+Build Crawler Docker Image
+```
+docker build . -f Dockerfile.crawler -t house-crawler-img --no-cache
+```
+
+Start Crawler in Container
+```
+docker run  --env-file .env --name house-crawler  house-crawler-img
 ```
 
 ### Running the tests
@@ -183,7 +204,7 @@ make tests
 
 create API Doc (Use [Aglio](https://github.com/danielgtaylor/aglio/issues))
 ```
-aglio --theme-variables streak  -i api.apib --theme-template triple -o docs/api.html
+aglio --theme-variables streak  -i docs/api.apib --theme-template triple -o docs/api.html
 ```
 
 #### Coding style tests

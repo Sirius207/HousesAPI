@@ -7,6 +7,8 @@ from loguru import logger
 
 from crawler.models.houses import parse_single_house
 from crawler.models.pages import parse_houses_url
+from api.loader.csv_to_mongo import save_data_to_mongo
+from api.loader.csv_to_es import save_data_to_es
 
 
 def _load_basic_houses_info(
@@ -45,16 +47,20 @@ def _export_house_data_to_csv(output_file: str, houses: dict):
 
 
 def main(args):
-    parse_houses_url(args.urls_file, city_id=args.city_id)
+    parse_houses_url(args.urls_file, city_id=args.city_id, page_limit=args.page_limit)
     basic_houses_info = _load_basic_houses_info(
         args.urls_file, args.url_start, args.url_end
     )
+    logger.info(f"Start Parse {len(basic_houses_info)} Houses with urls")
     houses = _parallel_parse_house_data(basic_houses_info)
 
     logger.info(f"Parse {len(houses)} Houses")
     logger.info(f"Sample: {houses[0]}")
 
     _export_house_data_to_csv(args.data_file, houses)
+
+    save_data_to_mongo(args.data_file)
+    save_data_to_es(args.data_file)
 
 
 if __name__ == "__main__":
@@ -75,13 +81,16 @@ if __name__ == "__main__":
         "--city_id", dest="city_id", help="city_id for parsing", default=1
     )
     parser.add_argument(
+        "--page_limit", dest="page_limit", help="page_limit for parsing", default=2
+    )
+    parser.add_argument(
         "--url_start",
         dest="url_start",
         help="the start index for house parsing",
         default=0,
     )
     parser.add_argument(
-        "--url_end", dest="url_end", help="the end index for house parsing", default=250
+        "--url_end", dest="url_end", help="the end index for house parsing", default=5
     )
     cli_args = parser.parse_args()
 
