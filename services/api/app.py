@@ -13,11 +13,11 @@ from flask import Flask
 from flask_restful import Api
 from werkzeug.exceptions import HTTPException, default_exceptions
 
-
 from config import APP_CONFIG
 from db import db
 from endpoints import RESOURCES
 from endpoints.utils import log_context
+
 
 load_dotenv()
 
@@ -87,7 +87,7 @@ def create_app(config_mode):
         response_dict = response.get_json()
         response_dict["status_code"] = response.status_code
 
-        log_context("Response", response_dict)
+        log_context("Response", {"status_code": response.status_code})
         return response
 
     # pylint: enable=W0612

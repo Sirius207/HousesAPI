@@ -25,7 +25,7 @@ instances:
       - kib01
       - localhost
 
-  - name: filebeat
+  - name: elastic_gateway
     dns:
-      - filebeat
+      - elastic_gateway
       - localhost

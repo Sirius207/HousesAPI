@@ -17,13 +17,13 @@ repos:
           - id: mypy
 
     - repo: https://github.com/ambv/black
-      rev: stable
+      rev: 21.6b0
       hooks:
           - id: black
             language_version: python3.9
 
     - repo: https://github.com/Lucas-C/pre-commit-hooks-bandit
-      rev: v1.0.4
+      rev: v1.0.3
       hooks:
           - id: python-bandit-vulnerability-check
             args: [-ll, --recursive, -x, tests, --skip, B311]

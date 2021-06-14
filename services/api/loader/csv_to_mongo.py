@@ -1,10 +1,9 @@
-from typing import List
 from argparse import ArgumentParser
 
 from loguru import logger
 from mongoengine import connect
 from mongoengine.errors import BulkWriteError
-
+from pymongo import UpdateOne
 
 from api.config import Config
 from api.endpoints.houses.model import House
@@ -12,7 +11,14 @@ from api.loader.load_csv import get_houses
 
 
 # pylint: disable= E1101
-def save_data_to_mongo(houses_data: List[dict]):
+def save_data_to_mongo(filename: str):
+    """use bulkwrite to import house data to mongoDB
+
+    Args:
+        filename (str): the filename of house data
+    """
+
+    houses_data = get_houses(filename)
 
     connect(
         db=Config.MONGODB_SETTINGS["db"],
@@ -23,7 +29,18 @@ def save_data_to_mongo(houses_data: List[dict]):
     )
 
     houses = [House(**house_data) for house_data in houses_data]
-    House.objects.insert(houses)
+
+    bulk_operations = [
+        UpdateOne(
+            {"_id": house.house_id}, {"$set": house.to_mongo().to_dict()}, upsert=True
+        )
+        for house in houses
+    ]
+
+    # pylint: disable= W0212
+    House._get_collection().bulk_write(bulk_operations, ordered=False)
+    # pylint: enable= W0212
+    logger.success("Save data to MongoDB Successfully")
 
 
 # pylint: enable= E1101
@@ -34,7 +51,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        save_data_to_mongo(get_houses(args.filename))
-        logger.success("Save data to MongoDB Successfully")
+        save_data_to_mongo(args.filename)
     except BulkWriteError as error:
         logger.error(error)

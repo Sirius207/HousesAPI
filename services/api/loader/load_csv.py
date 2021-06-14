@@ -5,6 +5,14 @@ from loguru import logger
 
 
 def get_houses(filepath: str = "data/temp_info.csv") -> List[dict]:
+    """read houses data, create house_id column, drop duplicated data
+
+    Args:
+        filepath (str, optional): the path of house data. Defaults to "data/temp_info.csv".
+
+    Returns:
+        List[dict]: [{"house_id": "", "house_type: "", ...}, ...]
+    """
     house_df = pd.read_csv(filepath)
 
     house_df["house_id"] = house_df["url"].map(
