@@ -19,12 +19,14 @@ class ESConfig:
     index = os.environ.get("ES_INDEX", "houses-data")
     username = os.environ.get("ES_USER")
     password = os.environ.get("ES_PASSWORD")
+    ca_path = os.environ.get("ES_CA_PATH", "data/ca.crt")
+    cert_path = os.environ.get("ES_CERT_PATH", "data/es01.crt")
 
 
 class ESOperator:
     def __init__(self, Config):
-        context = create_default_context(cafile="data/es01.crt")
-        context.load_verify_locations(cafile="data/ca.crt")
+        context = create_default_context(cafile=Config.cert_path)
+        context.load_verify_locations(cafile=Config.ca_path)
         context.verify_mode = CERT_REQUIRED
         self.es_conn = Elasticsearch(
             hosts=[Config.host],

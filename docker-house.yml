@@ -24,14 +24,18 @@ services:
       context: ./
       dockerfile: Dockerfile.crawler
     container_name: crawler_taipei
+    env_file:
+      - ./.env
     environment:
       - CITY_ID=1                 # the order of element in 591 website for selenium working
-      - PAGE_LIMIT=300            # the max page for urls parsing
-      - URL_END=9000              # the max number of houses for urls parsing
-      - EXECUTED_TIME=19:51
       - CHROME_HOST=selenium-hub
       - USE_DOCKER=1              # whether use docker selenium or not
-      - MONGO_HOST=mongodb
+      - MONGO_HOST=elastic_gateway
+      - ES_HOST=elastic_gateway
+      - ES_PORT=9300
+      - ES_CERT_PATH=data/elastic_gateway.crt
+    volumes:
+      - ./services/data:/data
     networks:
       - crawler
 
@@ -42,14 +46,18 @@ services:
       context: ./
       dockerfile: Dockerfile.crawler
     container_name: crawler_new_taipei
+    env_file:
+      - ./.env
     environment:
       - CITY_ID=3                 # the order of element in 591 website for selenium working
-      - PAGE_LIMIT=300            # the max page for urls parsing
-      - URL_END=9000              # the max number of houses for urls parsing
-      - EXECUTED_TIME=19:51
       - CHROME_HOST=selenium-hub
       - USE_DOCKER=1              # whether use docker selenium or not
       - MONGO_HOST=elastic_gateway
+      - ES_HOST=elastic_gateway
+      - ES_PORT=9300
+      - ES_CERT_PATH=data/elastic_gateway.crt
+    volumes:
+      - ./services/data:/data
     networks:
       - crawler
 
@@ -62,8 +70,12 @@ services:
       - crawler
       - es_elastic
     volumes:
-      - ./docker-manifests/subconfigs/nginx-elastic.conf:/etc/nginx/conf.d/elastic.conf
+      - ./docker-manifests/subconfigs/nginx-elastic-http.conf:/etc/nginx/conf.d/elastic_http.conf
+      - ./docker-manifests/subconfigs/nginx-elastic.conf:/etc/nginx/conf.d/elastic_stream.conf
       - ./docker-manifests/subconfigs/nginx.conf:/etc/nginx/nginx.conf
+      - ./services/data/ca.crt:/etc/nginx/certs/ca.crt
+      - ./services/data/elastic_gateway.crt:/etc/nginx/certs/elastic_gateway.crt
+      - ./services/data/elastic_gateway.key:/etc/nginx/certs/elastic_gateway.key
 
     depends_on: [selenium-hub, chrome]
 
