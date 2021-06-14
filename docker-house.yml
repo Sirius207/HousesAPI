@@ -1,4 +1,4 @@
-version: '2.2'
+version: '3.5'
 
 services:
   selenium-hub:
@@ -25,12 +25,13 @@ services:
       dockerfile: Dockerfile.crawler
     container_name: crawler_taipei
     environment:
-      - CITY_ID=1
-      - PAGE_LIMIT=300
-      - URL_END=9000
+      - CITY_ID=1                 # the order of element in 591 website for selenium working
+      - PAGE_LIMIT=300            # the max page for urls parsing
+      - URL_END=9000              # the max number of houses for urls parsing
       - EXECUTED_TIME=19:51
       - CHROME_HOST=selenium-hub
-      - USE_DOCKER=1
+      - USE_DOCKER=1              # whether use docker selenium or not
+      - MONGO_HOST=mongodb
     networks:
       - crawler
 
@@ -42,17 +43,33 @@ services:
       dockerfile: Dockerfile.crawler
     container_name: crawler_new_taipei
     environment:
-      - CITY_ID=3
-      - PAGE_LIMIT=300
-      - URL_END=9000
+      - CITY_ID=3                 # the order of element in 591 website for selenium working
+      - PAGE_LIMIT=300            # the max page for urls parsing
+      - URL_END=9000              # the max number of houses for urls parsing
       - EXECUTED_TIME=19:51
       - CHROME_HOST=selenium-hub
-      - USE_DOCKER=1
+      - USE_DOCKER=1              # whether use docker selenium or not
+      - MONGO_HOST=elastic_gateway
     networks:
       - crawler
 
     depends_on: [selenium-hub, chrome]
 
+  elastic_gateway:
+    image: nginx
+    container_name: elastic_gateway
+    networks:
+      - crawler
+      - es_elastic
+    volumes:
+      - ./docker-manifests/subconfigs/nginx-elastic.conf:/etc/nginx/conf.d/elastic.conf
+      - ./docker-manifests/subconfigs/nginx.conf:/etc/nginx/nginx.conf
+
+    depends_on: [selenium-hub, chrome]
+
+
 networks:
   crawler:
     driver: bridge
+  es_elastic:
+    external: true

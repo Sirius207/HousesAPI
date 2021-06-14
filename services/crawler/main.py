@@ -7,6 +7,7 @@ from loguru import logger
 
 from crawler.models.houses import parse_single_house
 from crawler.models.pages import parse_houses_url
+from api.loader.csv_to_mongo import save_data_to_mongo
 
 
 def _load_basic_houses_info(
@@ -55,6 +56,8 @@ def main(args):
     logger.info(f"Sample: {houses[0]}")
 
     _export_house_data_to_csv(args.data_file, houses)
+
+    save_data_to_mongo(args.data_file)
 
 
 if __name__ == "__main__":
