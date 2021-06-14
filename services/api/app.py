@@ -87,7 +87,7 @@ def create_app(config_mode):
         response_dict = response.get_json()
         response_dict["status_code"] = response.status_code
 
-        log_context("Response", response_dict)
+        log_context("Response", {"status_code": response.status_code})
         return response
 
     # pylint: enable=W0612

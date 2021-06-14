@@ -141,9 +141,15 @@ g. Start RESTful API
 python api/app.py
 ```
 
-### Running Production (API)
+### Running Production
 
-#### API
+#### Run Crawler, API, Nginx Proxy
+
+```
+docker-compose -f docker-house.yml up -d
+```
+
+#### Just Run API
 
 Build API Docker Image
 ```
@@ -155,7 +161,7 @@ Start WSGI in Container
 docker run  --env-file .env --name house-api -d -p 5000:5000 house-api-img
 ```
 
-#### Crawler
+#### Just Run Crawler
 
 Build Crawler Docker Image
 ```

@@ -67,6 +67,7 @@ services:
     image: nginx
     container_name: elastic_gateway
     networks:
+      - api
       - crawler
       - es_elastic
     volumes:
@@ -80,7 +81,25 @@ services:
     depends_on: [selenium-hub, chrome]
 
 
+  house_api:
+    build:
+      context: ./
+      dockerfile: Dockerfile.api
+    container_name: house_api
+    ports:
+      - 5000:5000
+    env_file:
+      - ./.env
+    environment:
+      - MONGO_HOST=elastic_gateway
+      - APM_URL=http://elastic_gateway:8300
+    networks:
+      - api
+    depends_on: [elastic_gateway]
+
 networks:
+  api:
+    driver: bridge
   crawler:
     driver: bridge
   es_elastic:
