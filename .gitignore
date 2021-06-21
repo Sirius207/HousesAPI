@@ -129,3 +129,10 @@ dmypy.json
 .pyre/
 
 data/
+
+# cert
+*.pem
+*.srl
+*.crt
+*.req
+*.key

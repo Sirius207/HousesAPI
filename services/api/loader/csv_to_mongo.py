@@ -10,15 +10,16 @@ from api.endpoints.houses.model import House
 from api.loader.load_csv import get_houses
 
 
-# pylint: disable= E1101
-def save_data_to_mongo(filename: str):
-    """use bulkwrite to import house data to mongoDB
-
-    Args:
-        filename (str): the filename of house data
-    """
-
-    houses_data = get_houses(filename)
+def connect_mongo():
+    """build mongo db connection"""
+    if Config.MONGODB_SETTINGS["tls"]:
+        tls_config = {
+            "tls": Config.MONGODB_SETTINGS["tls"],
+            "tlsCAFile": Config.MONGODB_SETTINGS["tlsCAFile"],
+            "tlsCertificateKeyFile": Config.MONGODB_SETTINGS["tlsCertificateKeyFile"],
+        }
+    else:
+        tls_config = {}
 
     connect(
         db=Config.MONGODB_SETTINGS["db"],
@@ -26,7 +27,20 @@ def save_data_to_mongo(filename: str):
         username=Config.MONGODB_SETTINGS["username"],
         password=Config.MONGODB_SETTINGS["password"],
         port=27017,
+        **tls_config
     )
+
+
+# pylint: disable= E1101
+def save_data_to_mongo(filename: str):
+    """use bulkwrite to import house data to mongoDB
+
+    Args:
+        filename (str): the filename of house data
+    """
+    connect_mongo()
+
+    houses_data = get_houses(filename)
 
     houses = [House(**house_data) for house_data in houses_data]
 
