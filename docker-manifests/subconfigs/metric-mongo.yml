@@ -23,16 +23,16 @@
   # password configuration options.
 
   # Optional SSL. By default is off.
-  #ssl.enabled: true
+  ssl.enabled: true
 
-  # Mode of verification of server certificate ('none' or 'full')
-  #ssl.verification_mode: 'full'
+  # # Mode of verification of server certificate ('none' or 'full')
+  ssl.verification_mode: 'full'
 
-  # List of root certificates for TLS server verifications
-  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  # # List of root certificates for TLS server verifications
+  ssl.certificate_authorities: ["/usr/share/elasticsearch/config/certificates/mongodb/ca.pem"]
 
-  # Certificate for SSL client authentication
-  #ssl.certificate: "/etc/pki/client/cert.pem"
+  # # Certificate for SSL client authentication
+  ssl.certificate: "/usr/share/elasticsearch/config/certificates/mongodb/client.crt"
 
-  # Client Certificate Key
-  #ssl.key: "/etc/pki/client/cert.key"
+  # # Client Certificate Key
+  ssl.key: "/usr/share/elasticsearch/config/certificates/mongodb/client.key"

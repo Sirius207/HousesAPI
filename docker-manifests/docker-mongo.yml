@@ -3,6 +3,7 @@ version: '3'
 
 services:
   mongodb:
+    user: root
     image: mongo:4.2.14
     container_name: mongodb
     restart: unless-stopped
@@ -21,6 +22,11 @@ services:
     volumes:
       - mongodbdata:/data/db
       - mongodblog:/var/log/mongodb/
+      - ./mongo:/data/configssl
+    entrypoint:
+        - bash
+        - -c
+        - /usr/bin/mongod --quiet --config /data/configssl/mongod.conf
     networks:
       - elastic
 

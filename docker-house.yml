@@ -27,7 +27,7 @@ services:
     env_file:
       - ./.env
     environment:
-      - CITY_ID=1                 # the order of element in 591 website for selenium working
+      - CITY_ID=1                 # the order of element in housing website for selenium working
       - CHROME_HOST=selenium-hub
       - USE_DOCKER=1              # whether use docker selenium or not
       - MONGO_HOST=elastic_gateway
@@ -49,7 +49,7 @@ services:
     env_file:
       - ./.env
     environment:
-      - CITY_ID=3                 # the order of element in 591 website for selenium working
+      - CITY_ID=3                 # the order of element in housing website for selenium working
       - CHROME_HOST=selenium-hub
       - USE_DOCKER=1              # whether use docker selenium or not
       - MONGO_HOST=elastic_gateway
@@ -77,6 +77,9 @@ services:
       - ./services/data/ca.crt:/etc/nginx/certs/ca.crt
       - ./services/data/elastic_gateway.crt:/etc/nginx/certs/elastic_gateway.crt
       - ./services/data/elastic_gateway.key:/etc/nginx/certs/elastic_gateway.key
+      - ./services/data/ca.pem:/etc/nginx/certs/ca.pem
+      - ./services/data/mongo.crt:/etc/nginx/certs/mongo.crt
+      - ./services/data/mongo.key:/etc/nginx/certs/mongo.key
 
     depends_on: [selenium-hub, chrome]
 
@@ -93,6 +96,8 @@ services:
     environment:
       - MONGO_HOST=elastic_gateway
       - APM_URL=http://elastic_gateway:8300
+    volumes:
+      - ./services/data:/data
     networks:
       - api
     depends_on: [elastic_gateway]

@@ -5,20 +5,14 @@ Module for create default api user with token
 from datetime import datetime, timedelta
 
 from loguru import logger
-from mongoengine import connect
 
 from api.config import Config
 from api.endpoints.accounts.model import Account
+from api.loader.csv_to_mongo import connect_mongo
 
 
 def create_init_api_account():
-    connect(
-        db=Config.MONGODB_SETTINGS["db"],
-        host=Config.MONGODB_SETTINGS["host"],
-        username=Config.MONGODB_SETTINGS["username"],
-        password=Config.MONGODB_SETTINGS["password"],
-        port=27017,
-    )
+    connect_mongo()
 
     Account(
         **{
