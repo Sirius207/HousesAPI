@@ -11,7 +11,7 @@ load_dotenv()
 
 
 def get_mongo_config():
-    MONGODB_SETTINGS = {
+    mongodb_setting = {
         "host": os.environ.get("MONGO_HOST", "localhost"),
         "db": os.environ.get("MONGO_DATABASE", "flaskdb"),
         "username": os.environ.get("MONGO_DB_USERNAME", "apiuser"),
@@ -19,13 +19,13 @@ def get_mongo_config():
         "tls": bool(int(os.environ.get("MONGO_TLS", 0))),
     }
 
-    if MONGODB_SETTINGS["tls"]:
-        MONGODB_SETTINGS["tlsCAFile"] = os.environ.get("MONGO_CA_PATH", "data/ca.pem")
-        MONGODB_SETTINGS["tlsCertificateKeyFile"] = os.environ.get(
+    if mongodb_setting["tls"]:
+        mongodb_setting["tlsCAFile"] = os.environ.get("MONGO_CA_PATH", "data/ca.pem")
+        mongodb_setting["tlsCertificateKeyFile"] = os.environ.get(
             "MONGO_CERT_PATH", "data/mongo.pem"
         )
 
-    return MONGODB_SETTINGS
+    return mongodb_setting
 
 
 class Config:
