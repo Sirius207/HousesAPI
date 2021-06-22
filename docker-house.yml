@@ -77,6 +77,9 @@ services:
       - ./services/data/ca.crt:/etc/nginx/certs/ca.crt
       - ./services/data/elastic_gateway.crt:/etc/nginx/certs/elastic_gateway.crt
       - ./services/data/elastic_gateway.key:/etc/nginx/certs/elastic_gateway.key
+      - ./services/data/ca.pem:/etc/nginx/certs/ca.pem
+      - ./services/data/mongo.crt:/etc/nginx/certs/mongo.crt
+      - ./services/data/mongo.key:/etc/nginx/certs/mongo.key
 
     depends_on: [selenium-hub, chrome]
 
@@ -93,6 +96,8 @@ services:
     environment:
       - MONGO_HOST=elastic_gateway
       - APM_URL=http://elastic_gateway:8300
+    volumes:
+      - ./services/data:/data
     networks:
       - api
     depends_on: [elastic_gateway]

@@ -22,7 +22,7 @@ def get_mongo_config():
     if MONGODB_SETTINGS["tls"]:
         MONGODB_SETTINGS["tlsCAFile"] = os.environ.get("MONGO_CA_PATH", "data/ca.pem")
         MONGODB_SETTINGS["tlsCertificateKeyFile"] = os.environ.get(
-            "MONGO_CERT_PATH", "data/client.pem"
+            "MONGO_CERT_PATH", "data/mongo.pem"
         )
 
     return MONGODB_SETTINGS
