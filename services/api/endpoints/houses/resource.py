@@ -97,7 +97,7 @@ class HousesOperator(Resource):
             elif args["lessor_identity"] == "非屋主":
                 query_conditions["lessor_identity__nin"] = ("屋主", "屋主聲明：仲介勿擾")
             elif args["lessor_identity"] == "仲介":
-                query_conditions["lessor_identity__in"] = "仲介，收取服務費"
+                query_conditions["lessor_identity__in"] = ("仲介，收取服務費", "仲介")
 
         if args["lessor_lastname"]:
             query_conditions["lessor__contains"] = args["lessor_lastname"]
