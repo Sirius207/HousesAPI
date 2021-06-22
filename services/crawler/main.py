@@ -1,3 +1,4 @@
+import os
 from argparse import ArgumentParser
 from typing import List
 
@@ -34,7 +35,9 @@ def _parallel_parse_house_data(basic_houses_info: List[List[str]]) -> List[dict]
         List[dict]: [{"url": "", "house_type": "",...}, ...]
     """
     houses = Parallel(n_jobs=-1)(
-        delayed(parse_single_house)(house_info[0], house_info[1])
+        delayed(parse_single_house)(
+            house_info[0], house_info[1], os.environ.get("PROXY_IP")
+        )
         for house_info in basic_houses_info
     )
     # filter deleted houses
@@ -90,7 +93,7 @@ if __name__ == "__main__":
         default=0,
     )
     parser.add_argument(
-        "--url_end", dest="url_end", help="the end index for house parsing", default=5
+        "--url_end", dest="url_end", help="the end index for house parsing", default=2
     )
     cli_args = parser.parse_args()
 

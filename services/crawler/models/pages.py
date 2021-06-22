@@ -1,6 +1,7 @@
 """
-Module for 591 houses urls parsing
+Module for web houses urls parsing
 """
+import os
 import csv
 import time
 from collections import defaultdict
@@ -128,7 +129,7 @@ class HousePageOperator:
             page_limit (int, optional): The maximum page for parsing. Defaults to 3.
         """
         # city_id: 3-新北, 1-台北
-        url = "https://rent.591.com.tw/?kind=0&region=1&order=posttime&orderType=asc"
+        url = os.environ.get("WEB_URL")
         self.driver.get(url)
         self.choose_city(city_id)
 
@@ -176,7 +177,7 @@ class HousePageOperator:
 
 
 def parse_houses_url(output_file: str, city_id: int = 1, page_limit: int = 3):
-    """parse all urls from 591 website and export to csv
+    """parse all urls from housing website and export to csv
 
     Args:
         output_file (str): filepath for urls storage

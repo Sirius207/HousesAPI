@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 import pandas as pd
@@ -16,7 +17,7 @@ def get_houses(filepath: str = "data/temp_info.csv") -> List[dict]:
     house_df = pd.read_csv(filepath)
 
     house_df["house_id"] = house_df["url"].map(
-        lambda url: url.replace("https://rent.591.com.tw/rent-detail-", "")[:-5]
+        lambda url: url.replace(os.environ.get("WEB_URL_PREFIX"), "")[:-5]
     )
     house_df = house_df.drop(["url"], axis=1)
 
