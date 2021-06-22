@@ -92,7 +92,7 @@ class House:
 
         if "限男生" in rule:
             return "男生"
-        elif "限女生" in rule:
+        if "限女生" in rule:
             return "女生"
         return "男女生皆可"
 
