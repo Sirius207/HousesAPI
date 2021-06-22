@@ -10,6 +10,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def get_mongo_config():
+    mongodb_setting = {
+        "host": os.environ.get("MONGO_HOST", "localhost"),
+        "db": os.environ.get("MONGO_DATABASE", "flaskdb"),
+        "username": os.environ.get("MONGO_DB_USERNAME", "apiuser"),
+        "password": os.environ.get("MONGO_DB_PASSWORD", "sample"),
+        "tls": bool(int(os.environ.get("MONGO_TLS", 0))),
+    }
+
+    if mongodb_setting["tls"]:
+        mongodb_setting["tlsCAFile"] = os.environ.get("MONGO_CA_PATH", "data/ca.pem")
+        mongodb_setting["tlsCertificateKeyFile"] = os.environ.get(
+            "MONGO_CERT_PATH", "data/mongo.pem"
+        )
+
+    return mongodb_setting
+
+
 class Config:
     """Parent configuration class."""
 
@@ -21,12 +39,7 @@ class Config:
     API_VERSION = os.environ.get("API_VERSION", "v1")
     API_PREFIX = f"/{API_VERSION}/api"
 
-    MONGODB_SETTINGS = {
-        "host": os.environ.get("MONGO_HOST", "localhost"),
-        "db": os.environ.get("MONGO_DATABASE", "flaskdb"),
-        "username": os.environ.get("MONGO_DB_USERNAME", "apiuser"),
-        "password": os.environ.get("MONGO_DB_PASSWORD", "sample"),
-    }
+    MONGODB_SETTINGS = get_mongo_config()
 
     # API Account
     ADMIN_USER = {
