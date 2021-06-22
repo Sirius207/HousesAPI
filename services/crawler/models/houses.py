@@ -1,244 +1,42 @@
 """
-Module for Housing houses detailed data parsing
+Module for houses detailed data parsing
 """
+import os
 import re
+import uuid
 from typing import Optional, Tuple
 
-import pytesseract
 from loguru import logger
-from PIL import Image, ImageEnhance, ImageFilter
 from requests_html import HTMLSession
-from selenium.common.exceptions import NoSuchElementException
-
-from crawler.utils.driver import get_driver
+from bs4 import BeautifulSoup
 
 logger.add("house_parse.log", level="DEBUG")
-
-
-class PhoneOperator:
-    @classmethod
-    def get_phone_from_url(cls, url: str, html) -> Optional[str]:
-        """parse phone number with house page url
-
-        Args:
-            url (str): the url of a house page
-            html (object): the html object generate by request_html
-
-        Returns:
-            Optional[str]: the phone number str. e.g. 09********
-        """
-
-        # Method 1. Read Phone Text
-        phone = cls._get_phone_from_text(html)
-        if phone:
-            return phone
-
-        # Method 2. recognize image directly
-        phone, order = cls._get_phone_from_image(html)
-        if order == "zero":
-            return None
-
-        # Method 3. recognize image from screenshot
-        if not phone or not cls._validate_phone_str(phone):
-            logger.warning(f"{url}: image detect: {phone} -> parse screenshot ")
-            phone = cls._get_phone_from_screenshot(url)
-        else:
-            logger.success(f"{url}: {order} method -> {phone}")
-            return phone
-
-        if not phone or not cls._validate_phone_str(phone):
-            logger.error(f"{url}: parse screenshot fail -> {phone}")
-        else:
-            logger.success(f"{url}: parse screenshot -> {phone}")
-
-        return phone
-
-    @classmethod
-    def _get_phone_from_image(cls, html) -> Tuple[Optional[str], str]:
-        """use ocr package to recognize phone image
-
-        Args:
-            html (object): the html object generate by request_html
-
-        Returns:
-            Tuple[Optional[str], str]: phone number and method id (0 ~ 3)
-        """
-        image_element = html.find(".num img", first=True)
-        if not image_element:
-            return None, "zero"
-        image_url = f'https:{image_element.attrs["src"]}'
-        session = HTMLSession()
-        image = Image.open(session.get(image_url, stream=True).raw)
-
-        image = image.convert("L")
-        backup_image = image.copy()
-        backup_image_third = image.copy()
-
-        # Method 1
-        image = ImageEnhance.Brightness(image).enhance(0.9)
-        image = image.filter(ImageFilter.SMOOTH())
-        image = ImageEnhance.Contrast(image).enhance(2.0)
-        image = ImageEnhance.Sharpness(image).enhance(2.0)
-
-        phone = cls._image_to_phone(image)
-
-        if cls._validate_phone_str(phone):
-            return phone, "first"
-
-        # Method 2
-        logger.warning(f"image first detect: {phone} -> second method")
-        backup_image = ImageEnhance.Brightness(backup_image).enhance(0.9)
-        backup_image = ImageEnhance.Contrast(backup_image).enhance(2.0)
-        backup_image = ImageEnhance.Sharpness(backup_image).enhance(2.0)
-        phone = cls._image_to_phone(backup_image)
-
-        if cls._validate_phone_str(phone):
-            return phone, "second"
-
-        # Method 3
-        logger.warning(f"image first detect: {phone} -> third method")
-        backup_image_third = ImageEnhance.Brightness(backup_image_third).enhance(0.7)
-        phone = cls._image_to_phone(backup_image_third)
-
-        return phone, "third"
-
-    @staticmethod
-    def _image_to_phone(image) -> str:
-        # resize
-        image = image.resize((360, 60))
-
-        return (
-            pytesseract.image_to_string(image)
-            .replace("\n\x0c", "")
-            .replace(" ", "")
-            .replace("-", "")
-        )
-
-    @staticmethod
-    def _validate_phone_str(phone: str) -> bool:
-        """check all the phone chars is number or contains other chars
-            e.g.
-                0911111111 -> True
-                O911111111 -> False
-        Args:
-            phone (str): the phone number
-
-        Returns:
-            bool: the phone number is valid or not
-        """
-        try:
-            return bool(int(phone))
-        except ValueError as error:
-            logger.warning(error)
-            return False
-
-    @classmethod
-    def _get_phone_from_screenshot(cls, url: str) -> Optional[str]:
-        """actiavte webdriver, take screenshot,
-           use screenshot to recognize phone number (with high dpi)
-
-        Args:
-            url (str): the url of a house page
-
-        Returns:
-            Optional[str]: phone number
-        """
-        # pick house_id from url string
-        house_id = url[-13:-5]
-        screen_file = f"./data/phone/full_{house_id}.png"
-        phone_img = cls._save_screenshot(screen_file, url)
-
-        if phone_img:
-            return cls._recognize_phone_image(screen_file, phone_img)
-
-        return None
-
-    @staticmethod
-    def _save_screenshot(screen_file: str, url: str) -> Optional[str]:
-        """save screenshot to local dir for image recognizing
-
-        Args:
-            screen_file (str): the filename of screenshot
-            url (str): the url of house
-
-        Returns:
-            Optional[str]: the phone image is exist or not
-        """
-        try:
-            driver = get_driver()
-            driver.set_window_size(1366, 768)
-            driver.get(url)
-            driver.save_screenshot(screen_file)
-
-            return driver.find_element_by_css_selector(".num img")
-        except NoSuchElementException as error:
-            logger.warning(f"{url} phone image not found\n{error}")
-            return None
-
-    @classmethod
-    def _recognize_phone_image(cls, screen_file: str, phone_img) -> Optional[str]:
-        """recognize phone number by full screenshot
-
-        Args:
-            screen_file (str): the filepath of screenshot
-            phone_img (object): the img element generate by selenium
-
-        Returns:
-            Optional[str]: the phone number recognize with ocr package
-        """
-
-        # calc phone position
-        location = phone_img.location
-        size = phone_img.size
-        phone_img_x = location["x"]
-        phone_img_y = location["y"]
-        height = phone_img_y + size["height"]
-        width = phone_img_x + size["width"]
-
-        # crop photo
-        image = Image.open(screen_file)
-        image = image.crop((phone_img_x, phone_img_y, int(width), int(height)))
-
-        return cls._image_to_phone(image)
-
-    @staticmethod
-    def _get_phone_from_text(html) -> Optional[str]:
-        phone = html.find(".num", first=True)
-        if phone:
-            return phone.text
-
-        return None
 
 
 # pylint: disable= R0902
 
 
 class House:
-    def __init__(self, url: str, title: str, html):
+    def __init__(self, url: str, title: str, data):
         self.url = url
         self.title = title
-        self.sold = (
-            html.find(".DealEnd", first=True).text if html.find(".DealEnd") else None
-        )
-        self.phone = (
-            PhoneOperator.get_phone_from_url(url, html) if not self.sold else None
-        )
-        nav = html.find("#propNav a")
-        self.city = nav[2].text
-        self.district = nav[3].text
-        self.house_status = nav[4].text
+
+        self.phone = data["linkInfo"]["mobile"]
+        self.city = data["breadcrumb"][0]["name"].replace("租屋", "市")
+        self.district = data["breadcrumb"][1]["name"].replace("租屋", "市")
+        self.house_status = data["breadcrumb"][2]["name"].replace("租屋", "市")
 
         self.lessor, self.lessor_gender, self.lessor_identity = self._get_lessor_info(
-            html
+            data
         )
 
-        self.house_type = self._get_house_type(html)
-        self.gender_requirement = self._get_gender_requirement(html)
-
-        self.house_condition = self._get_house_condition(html)
+        self.sold = None
+        self.house_type = self._get_house_type(data)
+        self.gender_requirement = self._get_gender_requirement(data)
+        self.house_condition = self._get_house_condition(data)
 
     @staticmethod
-    def _get_lessor_info(html) -> Tuple:
+    def _get_lessor_info(data) -> Tuple:
         """[summary]
 
         Args:
@@ -250,24 +48,21 @@ class House:
         lessor_gender: Optional[str] = None
         lessor_identity: Optional[str] = None
 
-        lessor = html.find(".avatarRight i", first=True)
+        lessor = data["linkInfo"]["name"]
+        pattern_after_colon = r":\s*(.*)"
+        lessor = re.findall(pattern_after_colon, lessor)[0].strip()
+
+        lessor_identity = data["linkInfo"]["name"].replace(f": {lessor}", "")
         if lessor:
-            lessor = lessor.text
             if "先生" in lessor:
                 lessor_gender = "男"
             elif "小姐" in lessor:
                 lessor_gender = "女"
-            # e.g. pick "代理人" from "蘇先生（代理人）"
-            lessor_identity = html.find(".avatarRight div", first=True).text.replace(
-                lessor, ""
-            )[1:-1]
-        else:
-            lessor = None
 
         return lessor, lessor_gender, lessor_identity
 
     @staticmethod
-    def _get_house_type(html) -> Optional[str]:
+    def _get_house_type(data) -> Optional[str]:
         """parse the "型態" value from house page
 
         Args:
@@ -276,20 +71,15 @@ class House:
         Returns:
             Optional[str]: the "型態" field. e.g. "電梯大樓"
         """
-        elements = html.find(".attr li")
 
-        house_type = None
-        for element in elements:
-            pattern_after_colon = r":\s*(.*)"
-            if "型" in element.text:
-                house_type = re.findall(
-                    pattern_after_colon, element.text.replace("\n", "")
-                )[0]
+        for item in data["infoData"]["data"]:
+            if item["name"] == "型態":
+                return item["value"]
 
-        return house_type
+        return None
 
     @staticmethod
-    def _get_gender_requirement(html) -> Optional[str]:
+    def _get_gender_requirement(data) -> Optional[str]:
         """parse the "性別要求" value from house page
 
         Args:
@@ -298,17 +88,16 @@ class House:
         Returns:
             Optional[str]: the "性別要求" value. e.g. "男女生皆可"
         """
-        elements = html.find("ul li.clearfix .one")
-        labels = [element.text.replace("\n", "").strip() for element in elements]
-        try:
-            index = labels.index("性別要求")
-            elements = html.find("ul li.clearfix .two em")
-            return elements[index].text.replace("\n", "")
-        except ValueError:
-            return None
+        rule = data["service"]["rule"]
+
+        if "限男生" in rule:
+            return "男生"
+        elif "限女生" in rule:
+            return "女生"
+        return "男女生皆可"
 
     @staticmethod
-    def _get_house_condition(html) -> Optional[str]:
+    def _get_house_condition(data) -> Optional[str]:
         """parse the "屋況說明" value from house page
 
         Args:
@@ -317,8 +106,9 @@ class House:
         Returns:
             Optional[str]: the "屋況說明" value
         """
-        house_condition = html.find(".houseIntro", first=True)
-        return house_condition.text if house_condition else None
+        house_condition = data["remark"]["content"]
+        soup = BeautifulSoup(house_condition, features="html.parser")
+        return soup.get_text() if house_condition else None
 
     def to_dict(self) -> dict:
         return {
@@ -353,15 +143,21 @@ def parse_single_house(url, title, proxy=None) -> Optional[dict]:
         Optional[dict]: the house detailed data
     """
     session_arg = {"browser_args": [f"--proxy-server={proxy}"]} if proxy else {}
-
-    res = HTMLSession(**session_arg).get(url)
-
-    if res.html.find(".error_img") or res.html.find("#error-page"):
-        logger.warning(f"{url} house was removed")
+    headers = {
+        "device": "pc",
+        "deviceid": str(uuid.uuid4()),
+    }
+    house_id = url.replace(os.environ.get("WEB_URL_PREFIX"), "").replace(".html", "")
+    url = f"{os.environ.get('API_WEB_URL')}/tw/v1/house/rent/detail?id={house_id}&isOnline=1"
+    res = HTMLSession(**session_arg).get(url, headers=headers)
+    status = res.status_code
+    logger.info(f"Parse: {url} {status}")
+    if status != 200:
+        logger.error(status, res.text)
         return None
 
     try:
-        return House(url, title, res.html).to_dict()
+        return House(url, title, res.json()["data"]).to_dict()
     except AttributeError as error:
         logger.warning(f"{url}\n{error}")
         return None
