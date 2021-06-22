@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.5 (2021-06-22)
+
+- Add new version crawler
+
 ## v0.1.4 (2021-06-22)
 
 ## Feat
