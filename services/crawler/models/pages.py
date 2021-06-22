@@ -120,7 +120,7 @@ class HousePageOperator:
     def save_all_house_url(
         self, output_file: str, city_id: int = 1, page_limit: int = 3
     ):
-        """parse urls from 591 website and save as csv file
+        """parse urls from housing website and save as csv file
 
         Args:
             output_file (str): the filepath for urls saving

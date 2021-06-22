@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.4 (2021-06-22)
+
+## Feat
+
+- Enable MongoDB TLS Mode
+- Let metricbeat connect to mongoDB with TLS
+- Make API connect to MongoDB with TLS
+
 ## v0.1.3 (2021-06-14)
 
 ### Feat
@@ -49,6 +57,6 @@
 
 ## v0.1.0 (2021-06-06)
 
-- 591 Web Crawler
+- Housing Web Crawler
 - REST API with MongoDB
 - ElasticSearch and Kibana docker setup

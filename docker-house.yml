@@ -27,7 +27,7 @@ services:
     env_file:
       - ./.env
     environment:
-      - CITY_ID=1                 # the order of element in 591 website for selenium working
+      - CITY_ID=1                 # the order of element in housing website for selenium working
       - CHROME_HOST=selenium-hub
       - USE_DOCKER=1              # whether use docker selenium or not
       - MONGO_HOST=elastic_gateway
@@ -49,7 +49,7 @@ services:
     env_file:
       - ./.env
     environment:
-      - CITY_ID=3                 # the order of element in 591 website for selenium working
+      - CITY_ID=3                 # the order of element in housing website for selenium working
       - CHROME_HOST=selenium-hub
       - USE_DOCKER=1              # whether use docker selenium or not
       - MONGO_HOST=elastic_gateway

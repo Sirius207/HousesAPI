@@ -1,5 +1,5 @@
 """
-Module for 591 houses detailed data parsing
+Module for Housing houses detailed data parsing
 """
 import re
 from typing import Optional, Tuple
