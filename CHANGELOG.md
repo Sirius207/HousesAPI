@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.6 (2021-06-22)
+
+- Fix failure of querying lessor_identity
+
 ## v0.1.5 (2021-06-22)
 
 - Add new version crawler
